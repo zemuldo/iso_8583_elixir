@@ -7,9 +7,14 @@ defmodule Iso8583.MixProject do
       version: "0.1.0",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      build_embedded: Mix.env() == :prod,
+      start_permanent: Mix.env() == :prod,
+      deps: deps(),
+      package: package(),
+      description: description()
     ]
   end
+
 
   # Run "mix help compile.app" to learn about applications.
   def application do
@@ -23,6 +28,24 @@ defmodule Iso8583.MixProject do
     [
       # {:dep_from_hexpm, "~> 0.3.0"},
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
+      {:ex_doc, "~> 0.19"}
     ]
   end
+
+  defp description() do
+    "An Elixir module collection for ISO 8583 massing."
+  end
+
+
+  defp package() do
+    [
+      name: "iso_8583",
+      files: ["lib", "mix.exs", "README*", "LICENSE*"],
+      maintainers: ["Danstan Onyango"],
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/zemuldo/iso_8583_elixir"},
+      source_url: "https://github.com/zemuldo/iso_8583_elixir"
+    ]
+  end
+
 end

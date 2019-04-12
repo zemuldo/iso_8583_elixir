@@ -4,7 +4,7 @@ defmodule Iso8583 do
   """
 
   @doc """
-  Hello world.
+  Main Message Creator.
 
   ## Examples
 
