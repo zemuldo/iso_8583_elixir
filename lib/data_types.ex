@@ -53,12 +53,23 @@ defmodule Iso8583.DataTypes do
 
   def each(_field, _type, []), do: true
 
-  def valid?(field, type, string_data) do
+  def run_validation(field, type, string_data) do
     chars_list = String.graphemes(string_data)
 
     case String.graphemes(string_data) do
       [] -> false
       _ -> each(field, type, chars_list)
     end
+  end
+
+  def valid?(field, "x+n", string_data) do
+    case Regex.match?(~r/[c,d]/i, String.at(string_data, 0)) do
+      true -> run_validation(field, "x+n", string_data)
+      false -> {:error, "Data type x+n must be presceeded with c or d"}
+    end
+  end
+
+  def valid?(field, type, string_data) do
+    run_validation(field, type, string_data)
   end
 end
