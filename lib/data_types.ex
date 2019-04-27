@@ -55,8 +55,11 @@ defmodule DataTypes do
   end
 
   defp test?("x+n", character) do
-    Regex.match?(~r/[0-9a-z*#\x20]/i, character)
+    Regex.match?(~r/[0-9CDcd*#]/i, character)
   end
+
+  defp test?("z", _) do true end
+
 
   defp test?(type, _) do
     {:error, "Data type #{type} is not implemented"}
@@ -85,11 +88,11 @@ defmodule DataTypes do
 
   ## Examples
 
-      iex> DataTypes.valid?("67", "x+n", "cAAAssdsd")
+      iex> DataTypes.valid?("67", "x+n", "C99")
       true
       iex> DataTypes.valid?("67", "x+n", "AAAs&sdsd")
       {:error, "Data type x+n must be presceeded with c or d"}
-      iex> DataTypes.valid?("67", "x+n", "c%%")
+      iex> DataTypes.valid?("67", "x+n", "ca%")
       {:error, "While processing field 67 data provided is not of type 'x+n'"}
 
   """
