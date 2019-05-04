@@ -1,21 +1,21 @@
 defmodule DataTypes do
   @moduledoc """
-  This module provides utilities for validation ISO 8583 field data types based the description below pulled
+  This module provides utilities for validation `ISO 8583` field data types based the description below pulled
   from a postilion interface documentation. Each character gets validated against the regex that defines each fata type.
 
-  - a - Alphabetic characters, A through Z and a through z
-  - n - Numeric digits, 0 through 9
-  - p - Pad character, space
-  - s - Special characters, i.e. other printable
-  - an - Alphabetic and numeric characters
-  - as - Alphabetic and special characters
-  - ns - Numeric and special characters
-  - anp - Alphabetic, numeric and pad characters
-  - ans - Alphabetic, numeric and special characters
-  - x C for credit, D for debit, always associated with a numeric amount field, i.e. x+n16 means a prefix of C or D followed by 16
+  - `a` - Alphabetic characters, `A` through `Z` and a through `z`
+  - `n` - Numeric digits, `0` through `9`
+  - `p` - Pad character, space
+  - `s` - Special characters, i.e. other printable
+  - `an` - Alphabetic and numeric characters
+  - `as` - Alphabetic and special characters
+  - `ns` - Numeric and special characters
+  - `anp` - Alphabetic, numeric and pad characters
+  - `ans` - Alphabetic, numeric and special characters
+  - `x` `C` for credit, `D` for debit, always associated with a numeric amount field, i.e. `x+n16` means a prefix of `C` or `D` followed by `16`
   numeric characters.
-  - b - Binary representation of data
-  - z - Track 2 as defined in ISO 7813
+  - `b` - Binary representation of data
+  - `z` - `Track 2` as defined in `ISO 7813`
   """
 
   defp test?("a", character) do
@@ -85,7 +85,7 @@ defmodule DataTypes do
   end
 
   @doc """
-
+  Function to validate the data type in a field, returns `true` if all characters in a field matches the type otherwize return false
   ## Examples
 
       iex> DataTypes.valid?("67", "x+n", "C99")
