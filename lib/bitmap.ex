@@ -9,7 +9,6 @@ defmodule Bitmap do
     |> Map.new()
   end
 
-  @spec fields_0_127_binary(map()) :: any()
   def fields_0_127_binary(message) do
     create_bitmap(128, message, "")
     |> Tools.binary_to_hex()
