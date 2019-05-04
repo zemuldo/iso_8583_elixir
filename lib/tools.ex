@@ -12,4 +12,8 @@ defmodule Tools do
       {decimal_no, _} -> Integer.to_string(decimal_no, 2)
     end
   end
+
+  def create_bitmap_array(length) do
+    List.duplicate(0, length)
+  end
 end
