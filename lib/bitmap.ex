@@ -60,10 +60,12 @@ defmodule Bitmap do
 
   def fields_127_0_63_binary(message) do
     create_bitmap(64, message, "127.")
+    |> Tools.binary_to_hex()
   end
 
   def fields_127_25_0_25_binary(message) do
     create_bitmap(64, message, "127.25.")
+    |> Tools.binary_to_hex()
   end
 
   defp create_bitmap(length, message, field_extension) do
