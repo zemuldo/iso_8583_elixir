@@ -20,4 +20,25 @@ defmodule ToolsTest do
   test "should fail to convert binary to hexadecimal" do
     assert Tools.binary_to_hex("K2343ABCE") == {:error, "Binary string is not valid"}
   end
+
+  test "should append the right timestamp to message" do
+    timestamp = DateTime.from_naive!(~N[2018-11-15 11:01:30], "Etc/UTC")
+    message = %{
+      "0": "1200",
+      "2": "4761739001010119",
+      "3": "000000",
+      "4": "000000005000",
+      "6": "000000005000",
+      "22": "051",
+      "23": "001",
+      "25": "00",
+      "26": "12",
+      "32": "423935",
+      "33": "111111111",
+      "35": "4761739001010119D22122011758928889",
+      "41": "12345678"
+    }
+
+    assert Tools.attach_timestamps(message, timestamp) == Map.merge(message,%{"7": "1115110130", "12": "110130"})
+  end
 end
