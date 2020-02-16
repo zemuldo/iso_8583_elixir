@@ -15,7 +15,6 @@ defmodule Iso8583.MixProject do
     ]
   end
 
-
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
@@ -37,7 +36,6 @@ defmodule Iso8583.MixProject do
     "An Elixir module collection for ISO 8583 massing."
   end
 
-
   defp package() do
     [
       name: "iso_8583",
@@ -48,5 +46,4 @@ defmodule Iso8583.MixProject do
       source_url: "https://github.com/zemuldo/iso_8583_elixir"
     ]
   end
-
 end

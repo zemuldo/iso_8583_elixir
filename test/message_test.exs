@@ -1,6 +1,7 @@
 defmodule MessageTest do
   use ExUnit.Case
   doctest Tools
+
   test "should create new message" do
     message = Message.new(%{"0": "0100", "7": "0901105843", "12": "105843"})
     assert Map.get(message, :"7") == "0901105843"

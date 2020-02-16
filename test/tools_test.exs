@@ -1,8 +1,10 @@
 defmodule ToolsTest do
   use ExUnit.Case
   doctest Tools
+
   test "should convert hexadecimal to binary" do
-    assert Tools.hex_to_binary("0123456789ABCDEF") == "100100011010001010110011110001001101010111100110111101111"
+    assert Tools.hex_to_binary("0123456789ABCDEF") ==
+             "100100011010001010110011110001001101010111100110111101111"
   end
 
   test "should convert hexadecimal to binary, ignore last characters that are invalid" do
@@ -14,7 +16,8 @@ defmodule ToolsTest do
   end
 
   test "should convert binary to hexadecimal" do
-    assert Tools.binary_to_hex("100100011010001010110011110001001101010111100110111101111") == "123456789ABCDEF"
+    assert Tools.binary_to_hex("100100011010001010110011110001001101010111100110111101111") ==
+             "123456789ABCDEF"
   end
 
   test "should fail to convert binary to hexadecimal" do
@@ -23,6 +26,7 @@ defmodule ToolsTest do
 
   test "should append the right timestamp to message" do
     timestamp = DateTime.from_naive!(~N[2018-11-15 11:01:30], "Etc/UTC")
+
     message = %{
       "0": "1200",
       "2": "4761739001010119",
@@ -39,6 +43,7 @@ defmodule ToolsTest do
       "41": "12345678"
     }
 
-    assert Tools.attach_timestamps(message, timestamp) == Map.merge(message,%{"7": "1115110130", "12": "110130"})
+    assert Tools.attach_timestamps(message, timestamp) ==
+             Map.merge(message, %{"7": "1115110130", "12": "110130"})
   end
 end

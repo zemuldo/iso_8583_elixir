@@ -19,7 +19,8 @@ defmodule DataTypesTest do
   end
 
   test "should test invalid n type " do
-    assert DataTypes.valid?("22", "n", "4180875111950628R") == {:error, "While processing field 22 data provided is not of type 'n'"}
+    assert DataTypes.valid?("22", "n", "4180875111950628R") ==
+             {:error, "While processing field 22 data provided is not of type 'n'"}
   end
 
   test "should test valid b type " do
@@ -27,7 +28,8 @@ defmodule DataTypesTest do
   end
 
   test "should test invalid b type " do
-    assert DataTypes.valid?("22", "b", "4180875111950628R") == {:error, "While processing field 22 data provided is not of type 'b'"}
+    assert DataTypes.valid?("22", "b", "4180875111950628R") ==
+             {:error, "While processing field 22 data provided is not of type 'b'"}
   end
 
   test "should test valid p type # " do
@@ -39,7 +41,8 @@ defmodule DataTypesTest do
   end
 
   test "should test invalid p type " do
-    assert DataTypes.valid?("22", "p", "4180875111950628R") == {:error, "While processing field 22 data provided is not of type 'p'"}
+    assert DataTypes.valid?("22", "p", "4180875111950628R") ==
+             {:error, "While processing field 22 data provided is not of type 'p'"}
   end
 
   test "should test valid x+n type * " do
@@ -51,6 +54,7 @@ defmodule DataTypesTest do
   end
 
   test "should test invalid anp " do
-    assert DataTypes.valid?("22", "anp", "4180875111950628R%") == {:error, "While processing field 22 data provided is not of type 'anp'"}
+    assert DataTypes.valid?("22", "anp", "4180875111950628R%") ==
+             {:error, "While processing field 22 data provided is not of type 'anp'"}
   end
 end
