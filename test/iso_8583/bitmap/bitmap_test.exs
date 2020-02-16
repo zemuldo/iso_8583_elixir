@@ -1,5 +1,6 @@
 defmodule BitmapTest do
   use ExUnit.Case
+  alias Iso8583.Bitmap
   doctest Bitmap
 
   test "should create the right bitmap case 1" do

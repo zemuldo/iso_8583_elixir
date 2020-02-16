@@ -27,11 +27,11 @@ defmodule Iso8583.Formats do
         |> get_format
       end
 
-      defp join_fields(field, extension) do
-        field <> "." <> extension
+      defp join_fields(pre, post) do
+        pre <> "." <> post
       end
 
-      defp get_format(field), do: default_formats[field]
+      defp get_format(field), do: default_formats()[field]
     end
   end
 end

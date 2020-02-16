@@ -1,18 +1,10 @@
-defmodule Bitmap do
+defmodule Iso8583.Bitmap do
   @moduledoc """
   This module is for building the bitmaps. It supports both Primary, Secondary and Tertiary bitmaps for fields `0-127`. You can also 
   use the same module to build bitamps for extended fields like `127.0-63` and `127.25.0-63`
   """
 
-  alias Tools
-
-  defp base_zeros(length) do
-    List.duplicate(0, length)
-    |> Enum.with_index(0)
-    |> Enum.map(fn {k, v} -> {v, k} end)
-    |> Enum.sort_by(fn {index, _} -> index end)
-    |> Map.new()
-  end
+  alias Iso8583.Utils
 
   @doc """
   Function to create bitmap for fields 0-127. Takes a message `map` and creates a bitmap representing all fields 
@@ -53,52 +45,61 @@ defmodule Bitmap do
       "F40006C1A08000000000000000000000"
 
   """
+
+  # TODO: Configurable message format
+
+  @message_format :map
   def fields_0_127_binary(message) do
     create_bitmap(128, message, "")
-    |> Tools.binary_to_hex()
+    |> Utils.binary_to_hex()
   end
 
   def fields_127_0_63_binary(message) do
     create_bitmap(64, message, "127.")
-    |> Tools.binary_to_hex()
+    |> Utils.binary_to_hex()
   end
 
   def fields_127_25_0_25_binary(message) do
     create_bitmap(64, message, "127.25.")
-    |> Tools.binary_to_hex()
+    |> Utils.binary_to_hex()
   end
 
   defp create_bitmap(length, message, field_extension) do
-    base_zeros(length)
-    |> comprehend(message, field_extension)
-    |> Enum.sort_by(fn {index, _} -> index end)
-    |> Enum.map(fn {_index, value} -> value end)
-    |> Enum.join()
+    List.duplicate(0, length)
+    |> List.replace_at(0, 1)
+    |> comprehend(message, field_extension, length)
   end
 
-  defp comprehend(list, message, field_extension) do
-    for x <- list, do: field_present(message, x, field_extension)
+  defp comprehend(list, message, field_extension, length, iteration \\ 0)
+
+  defp comprehend(list, _, _, length, iteration) when iteration == length do
+    list |> Enum.join()
   end
 
-  defp field_present(_message, {0, _value}, "") do
-    {0, "1"}
-  end
+  defp comprehend(list, message, field_extension, length, iteration) do
+    field = build_field(field_extension, iteration + 1)
 
-  defp field_present(message, {index, _value}, field_extension) do
-    field = index + 1
-
-    case Map.get(message, integer_to_atom(field, field_extension)) do
+    case Map.get(message, field) do
       nil ->
-        {index, "0"}
+        list
+        |> comprehend(message, field_extension, length, iteration + 1)
 
       _ ->
-        {index, "1"}
+        list
+        |> List.replace_at(iteration, 1)
+        |> comprehend(message, field_extension, length, iteration + 1)
     end
   end
 
-  defp integer_to_atom(integer, field_extension) do
-    field_extension
-    |> Kernel.<>(Integer.to_string(integer))
-    |> String.to_atom()
+  defp build_field(extension, field) do
+    case @message_format do
+      :map ->
+        extension
+        |> Kernel.<>(Integer.to_string(field))
+        |> String.to_atom()
+
+      :json ->
+        extension <> Integer.to_string(field)
+    end
   end
 end
