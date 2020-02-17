@@ -11,13 +11,37 @@ defmodule Iso8583.Encode do
     "70" => "001"
   }
 
+  @sample_message_2 %{
+    "0": "0100",
+    "2": "5413330",
+    "3": "000000",
+    "4": "000000002000",
+    "7": "0210160607",
+    "11": "148893",
+    "12": "160607",
+    "13": "0210",
+    "14": "2512",
+    "18": "4111",
+    "22": "141",
+    "23": "003",
+    "25": "00",
+    "26": "12",
+    "35": "5413330089020011D2512601079360805F",
+    "41": "31327676",
+    "42": "4D4F424954494C4",
+    "43": "My Termianl Business                    ",
+    "49": "404",
+    "45": "0303030204E4149524F4249204B452dataString04B45",
+    "123": "09010001000105010103040C010001"
+  }
+
   alias Iso8583.Bitmap
   alias Iso8583.Utils
   alias Iso8583.Formats
   alias Iso8583.Encode.TCPLenHeader
 
   def call(message) do
-    @sample_message
+    @sample_message_2
     |> Utils.atomify_map()
     |> encode_0_127()
   end
@@ -25,7 +49,7 @@ defmodule Iso8583.Encode do
   defp encode_0_127(message) do
     bitmap = Bitmap.fields_0_127_binary(message)
     [mti_bitmap | rest] = Bitmap.create_bitmap(message, 128)
-    
+
     message[:"0"]
     |> Kernel.<>(Utils.hex_to_bytes(bitmap))
     |> Kernel.<>(rest |> loop_bitmap(message))
@@ -34,15 +58,19 @@ defmodule Iso8583.Encode do
 
   defp loop_bitmap(bitmap, message, encoded \\ <<>>, field_pad \\ <<>>, counter \\ 1)
   defp loop_bitmap([], _, encoded, _, _), do: encoded
+
   defp loop_bitmap(bitmap, message, encoded, field_pad, counter) do
     [current | rest_bitmaps] = bitmap
+
     case current do
-        1 -> 
-            field = Utils.construct_field(counter + 1, field_pad) |> IO.inspect
-            data = message[field] |> IO.inspect
-            new_encoded = encoded <> encode_field(field, data)
-            loop_bitmap(rest_bitmaps, message, new_encoded, field_pad, counter + 1)
-        0 -> loop_bitmap(rest_bitmaps, message, encoded, field_pad, counter + 1)
+      1 ->
+        field = Utils.construct_field(counter + 1, field_pad) |> IO.inspect()
+        data = message[field] |> IO.inspect()
+        new_encoded = encoded <> encode_field(field, data)
+        loop_bitmap(rest_bitmaps, message, new_encoded, field_pad, counter + 1)
+
+      0 ->
+        loop_bitmap(rest_bitmaps, message, encoded, field_pad, counter + 1)
     end
   end
 
@@ -51,19 +79,24 @@ defmodule Iso8583.Encode do
     encode_length_indicator(field, data, format)
   end
 
-  defp encode_length_indicator(field, data, %{len_type: len_type} = format) when len_type == "fixed" do
+  defp encode_length_indicator(field, data, %{len_type: len_type} = format)
+       when len_type == "fixed" do
     data
   end
 
   defp encode_length_indicator(field, data, format) do
+    # actual_len = byte_size(data)
+    # len = format |> get_len_type |> byte_size()
+    # pad = format.max_len - actual_len
+    # len_indicator = List.duplicate("0", pad) |> Enum.join() |> Utils.padd_chars(len, "0")
     actual_len = byte_size(data)
-    len = format |> get_len_type |> byte_size()
-    pad = len - actual_len
-    len_indicator = List.duplicate(0, pad) |> Enum.join()
+    max_len_chars = format |> get_len_type |> byte_size()
+    len_indicator = actual_len |> Integer.to_string() |> Utils.padd_chars(max_len_chars, "0")
     len_indicator <> data
   end
 
   defp get_len_type(%{len_type: len_type}) do
     [type | _] = len_type |> String.split("var")
+    type
   end
 end

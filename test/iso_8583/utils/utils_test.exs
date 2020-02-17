@@ -2,7 +2,7 @@ defmodule Iso8583.Test.UtilsTest do
   use ExUnit.Case
 
   alias Iso8583.Utils
-  
+
   doctest Utils
 
   test "should convert hexadecimal to binary" do

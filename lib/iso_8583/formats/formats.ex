@@ -38,6 +38,7 @@ defmodule Iso8583.Formats do
   defp join_fields(pre, post) do
     pre <> "." <> post
   end
+
   defp get_format(field) when is_atom(field), do: default_formats()[field]
   defp get_format(field) when is_binary(field), do: default_formats()[field |> String.to_atom()]
 end
