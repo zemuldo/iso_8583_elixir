@@ -50,21 +50,30 @@ defmodule Iso8583.Bitmap do
 
   @message_format :map
   def fields_0_127_binary(message) do
-    create_bitmap(128, message, "")
+    create_bitmap(message, 128)
+    |> Enum.join()
     |> Utils.binary_to_hex()
   end
 
   def fields_127_0_63_binary(message) do
-    create_bitmap(64, message, "127.")
+    create_bitmap(message, 64, "127.")
+    |> Enum.join()
     |> Utils.binary_to_hex()
   end
 
   def fields_127_25_0_25_binary(message) do
-    create_bitmap(64, message, "127.25.")
+    create_bitmap(message, 64, "127.25.")
+    |> Enum.join()
     |> Utils.binary_to_hex()
   end
 
-  defp create_bitmap(length, message, field_extension) do
+  def create_bitmap(message, length) do
+    List.duplicate(0, length)
+    |> List.replace_at(0, 1)
+    |> comprehend(message, "", length)
+  end
+
+  def create_bitmap(message, length, field_extension) do
     List.duplicate(0, length)
     |> List.replace_at(0, 1)
     |> comprehend(message, field_extension, length)
@@ -73,7 +82,7 @@ defmodule Iso8583.Bitmap do
   defp comprehend(list, message, field_extension, length, iteration \\ 0)
 
   defp comprehend(list, _, _, length, iteration) when iteration == length do
-    list |> Enum.join()
+    list
   end
 
   defp comprehend(list, message, field_extension, length, iteration) do

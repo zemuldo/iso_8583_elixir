@@ -1,6 +1,9 @@
 defmodule MessageTest do
   use ExUnit.Case
-  doctest Tools
+
+  doctest Iso8583.Message
+
+  alias Iso8583.Message
 
   test "should create new message" do
     message = Message.new(%{"0": "0100", "7": "0901105843", "12": "105843"})
