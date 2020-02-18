@@ -5,6 +5,8 @@ defmodule MessageTest do
 
   alias Iso8583.Message
 
+  use Iso8583.Test.Setup
+
   test "should create new message" do
     message = Message.new(%{"0": "0100", "7": "0901105843", "12": "105843"})
     assert Map.get(message, :"7") == "0901105843"

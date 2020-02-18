@@ -3,6 +3,14 @@ defmodule BitmapTest do
   alias Iso8583.Bitmap
   doctest Bitmap
 
+  use Iso8583.Test.Setup
+
+  import Iso8583.Test.Fixtures
+
+  test "should encode bitmap case 0" do
+    assert Bitmap.fields_0_127_binary(fixture_message(:"0100")) == "F21C46C1A0E091000000000000000022"
+  end
+
   test "should create the right bitmap case 1" do
     message = %{
       "0": "0100",

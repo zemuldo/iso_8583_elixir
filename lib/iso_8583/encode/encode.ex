@@ -39,24 +39,29 @@ defmodule Iso8583.Encode do
   alias Iso8583.Utils
   alias Iso8583.Formats
   alias Iso8583.Encode.TCPLenHeader
+  alias Iso8583.Decode
 
   def call(message) do
-    @sample_message_2
+    message
     |> Utils.atomify_map()
     |> encode_0_127()
   end
 
   defp encode_0_127(message) do
-    bitmap = Bitmap.fields_0_127_binary(message)
-    [mti_bitmap | rest] = Bitmap.create_bitmap(message, 128)
 
-    message[:"0"]
-    |> Kernel.<>(Utils.hex_to_bytes(bitmap))
-    |> Kernel.<>(rest |> loop_bitmap(message))
+    message =
+      message
+      |> Map.put(:"1", Bitmap.fields_0_127_binary(message))
+      |> Decode.expand_field("127.")
+      |> Decode.expand_field("127.25.")
+
+    message
+    |> Bitmap.create_bitmap(128)
+    |> loop_bitmap(message, message[:"0"])
     |> Utils.encode_tcp_header()
   end
 
-  defp loop_bitmap(bitmap, message, encoded \\ <<>>, field_pad \\ <<>>, counter \\ 1)
+  defp loop_bitmap(bitmap, message, encoded \\ <<>>, field_pad \\ <<>>, counter \\ 0)
   defp loop_bitmap([], _, encoded, _, _), do: encoded
 
   defp loop_bitmap(bitmap, message, encoded, field_pad, counter) do
@@ -64,8 +69,8 @@ defmodule Iso8583.Encode do
 
     case current do
       1 ->
-        field = Utils.construct_field(counter + 1, field_pad) |> IO.inspect()
-        data = message[field] |> IO.inspect()
+        field = Utils.construct_field(counter + 1, field_pad)
+        data = message[field]
         new_encoded = encoded <> encode_field(field, data)
         loop_bitmap(rest_bitmaps, message, new_encoded, field_pad, counter + 1)
 
@@ -75,24 +80,29 @@ defmodule Iso8583.Encode do
   end
 
   defp encode_field(field, data) do
-    format = field |> Iso8583.Formats.format()
+    format = field |> Formats.format()
     encode_length_indicator(field, data, format)
   end
 
   defp encode_length_indicator(field, data, %{len_type: len_type} = format)
        when len_type == "fixed" do
-    data
+    data |> encode_data(format.content_type)
+  end
+
+  defp encode_data(data, content_type) do
+    case content_type do
+      "b" -> Utils.hex_to_bytes(data)
+      _ -> data
+    end
   end
 
   defp encode_length_indicator(field, data, format) do
-    # actual_len = byte_size(data)
-    # len = format |> get_len_type |> byte_size()
-    # pad = format.max_len - actual_len
-    # len_indicator = List.duplicate("0", pad) |> Enum.join() |> Utils.padd_chars(len, "0")
-    actual_len = byte_size(data)
     max_len_chars = format |> get_len_type |> byte_size()
-    len_indicator = actual_len |> Integer.to_string() |> Utils.padd_chars(max_len_chars, "0")
-    len_indicator <> data
+
+    byte_size(data)
+    |> Integer.to_string()
+    |> Utils.padd_chars(max_len_chars, "0")
+    |> Kernel.<>(data |> encode_data(format.content_type))
   end
 
   defp get_len_type(%{len_type: len_type}) do

@@ -104,4 +104,9 @@ defmodule Iso8583.Utils do
         string
     end
   end
+
+  def var_len_chars(%{len_type: len_type}) do
+    [type | _] = len_type |> String.split("var")
+    byte_size(type)
+  end
 end

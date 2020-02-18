@@ -4,8 +4,10 @@ defmodule Iso8583.Test.DataTypesTest do
   alias Iso8583.DataTypes
 
   doctest Iso8583.DataTypes
+  
 
   describe "Data Types" do
+    use Iso8583.Test.Setup
     test "should test unknown type" do
       assert DataTypes.valid?("2", "aa", "ABCD") == {:error, "Data type aa is not implemented"}
     end

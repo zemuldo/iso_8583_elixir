@@ -86,7 +86,10 @@ defmodule Iso8583.Bitmap do
   end
 
   defp comprehend(list, message, field_extension, length, iteration) do
+    # IO.inspect(list)
+    # IO.inspect(iteration)
     field = build_field(field_extension, iteration + 1)
+    # IO.inspect(Map.get(message, field))
 
     case Map.get(message, field) do
       nil ->
