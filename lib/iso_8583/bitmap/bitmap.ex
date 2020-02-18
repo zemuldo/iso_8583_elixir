@@ -51,6 +51,7 @@ defmodule Iso8583.Bitmap do
   @message_format :map
   def fields_0_127_binary(message) do
     create_bitmap(message, 128)
+    |> ensure_127(message)
     |> Enum.join()
     |> Utils.binary_to_hex()
   end
@@ -114,4 +115,11 @@ defmodule Iso8583.Bitmap do
         extension <> Integer.to_string(field)
     end
   end
+
+  defp ensure_127(bitmap, %{"127.1": _}) do
+    bitmap |> List.replace_at(126, 1)
+  end
+
+  defp ensure_127(bitmap, _), do: bitmap
+  
 end

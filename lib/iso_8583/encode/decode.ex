@@ -12,7 +12,7 @@ defmodule Iso8583.Decode do
     |> Map.merge(expand_generic(data, "127.25."))
   end
 
-  def expand_field(_, _), do: %{}
+  def expand_field(message, _), do: message
 
   defp expand_generic(data, field_pad) do
     data
@@ -24,6 +24,7 @@ defmodule Iso8583.Decode do
   end
 
   defp extract_children([], _, _, extracted, _), do: extracted
+
   defp extract_children(bitmap, data, pad, extracted, counter) do
     [current | rest] = bitmap
     field = Utils.construct_field(counter + 1, pad)
@@ -31,16 +32,19 @@ defmodule Iso8583.Decode do
     case current do
       "1" ->
         {field_data, left} = extract_field_data(field, data, field |> Formats.format())
-        extracted = extracted |> Map.put(field, field_data) 
+        extracted = extracted |> Map.put(field, field_data)
         extract_children(rest, left, pad, extracted, counter + 1)
-      "0" -> extract_children(rest, data, pad, extracted, counter + 1)
+
+      "0" ->
+        extract_children(rest, data, pad, extracted, counter + 1)
     end
   end
 
   defp extract_field_data(_, data, nil), do: {"", data}
+
   defp extract_field_data(field, data, %{len_type: len_type} = format)
        when len_type == "fixed" do
-    {data |>  String.slice(0, format.max_len), data |>  String.slice(format.max_len..-1)}
+    {data |> String.slice(0, format.max_len), data |> String.slice(format.max_len..-1)}
   end
 
   defp extract_field_data(field, data, %{len_type: len_type} = format) do
