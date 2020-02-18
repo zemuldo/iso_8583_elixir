@@ -67,13 +67,11 @@ defmodule Iso8583.Encode do
 
     message =
       message
-      |> IO.inspect
       |> Map.put(:"1", Bitmap.fields_0_127_binary(message))
       |> Decode.expand_field("127.")
       |> Decode.expand_field("127.25.")
       |> encoding_extensions(:"127.25")
       |> encoding_extensions(:"127")
-      |> IO.inspect()
 
     message
     |> Bitmap.fields_0_127_binary()
@@ -89,13 +87,12 @@ defmodule Iso8583.Encode do
     data = message[:"127.25.1"]
     |> Utils.hex_to_binary()
     |> Utils.pad_string("0", 64)
-    |> IO.inspect
     |> String.graphemes()
     |> Enum.map(fn n -> String.to_integer(n) end)
     |> loop_bitmap(message, message[:"127.25.1"], "127.25.")
     |> encode_length_indicator("127.25", Formats.format(:"127.25"))
     
-    Map.merge(message, %{"127.25": data})  |> IO.inspect
+    Map.merge(message, %{"127.25": data})
   end
 
   def encoding_extensions(%{"127.1": _} = message, :"127") do
@@ -103,7 +100,6 @@ defmodule Iso8583.Encode do
     |> Utils.hex_to_binary()
     |> Utils.pad_string("0", 64)
     |> String.graphemes()
-    |> IO.inspect
     |> Enum.map(fn n -> String.to_integer(n) end)
     |> loop_bitmap(message, message[:"127.1"], "127.")
 
