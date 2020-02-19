@@ -132,8 +132,8 @@ defmodule Iso8583.Bitmap do
         "127.25.6": "00C2",
         "127.25.7": "FF00"
         }
-        iex>Bitmap.fields_0_127_25_0_33(message)
-        "7E1E5F7C00000000"
+      iex>Bitmap.fields_0_127_25_0_33(message)
+      "7E1E5F7C00000000"
   """
   def fields_0_127_25_0_33(message) do
     create_bitmap(message, 64, "127.25.")
