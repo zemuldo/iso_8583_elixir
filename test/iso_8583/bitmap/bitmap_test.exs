@@ -8,7 +8,7 @@ defmodule BitmapTest do
   import Iso8583.Test.Fixtures
 
   test "should encode bitmap case 0" do
-    assert Bitmap.fields_0_127_binary(fixture_message(:"0100")) == "F21C46C1A0E091000000000000000022"
+    assert Bitmap.fields_0_127(fixture_message(:"0100")) == "F21C46C1A0E091000000000000000022"
   end
 
   test "should create the right bitmap case 1" do
@@ -42,7 +42,7 @@ defmodule BitmapTest do
       "7": "0901105843"
     }
 
-    assert Bitmap.fields_0_127_binary(message) == "F23C46C1A8E091000000000000000022"
+    assert Bitmap.fields_0_127(message) == "F23C46C1A8E091000000000000000022"
   end
 
   test "should create the right bitmap case 2" do
@@ -62,7 +62,7 @@ defmodule BitmapTest do
       "41": "12345678"
     }
 
-    assert Bitmap.fields_0_127_binary(message) == "F40006C1A08000000000000000000000"
+    assert Bitmap.fields_0_127(message) == "F40006C1A08000000000000000000000"
   end
 
   test "should create the right bitmap fields 127.0-64" do
@@ -96,7 +96,7 @@ defmodule BitmapTest do
       "127.25.30": "39079EDA"
     }
 
-    assert Bitmap.fields_127_0_63_binary(message) == "8000008000000000"
+    assert Bitmap.fields_0_127_0_39(message) == "0000008000000000"
   end
 
   test "should create the right bitmap fields 127.25.0-64" do
@@ -130,6 +130,6 @@ defmodule BitmapTest do
       "127.25.30": "39079EDA"
     }
 
-    assert Bitmap.fields_127_25_0_25_binary(message) == "FE1E5F7C00000000"
+    assert Bitmap.fields_0_127_25_0_33(message) == "7E1E5F7C00000000"
   end
 end

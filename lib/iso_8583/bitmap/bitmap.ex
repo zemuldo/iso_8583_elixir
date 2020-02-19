@@ -1,10 +1,11 @@
 defmodule Iso8583.Bitmap do
+  alias Iso8583.Utils
+
+  @message_format :map
   @moduledoc """
   This module is for building the bitmaps. It supports both Primary, Secondary and Tertiary bitmaps for fields `0-127`. You can also 
-  use the same module to build bitamps for extended fields like `127.0-63` and `127.25.0-63`
+  use the same module to build bitamps for extended fields like `127.0-39` and `127.25.0-33`
   """
-
-  alias Iso8583.Utils
 
   @doc """
   Function to create bitmap for fields 0-127. Takes a message `map` and creates a bitmap representing all fields 
@@ -41,42 +42,114 @@ defmodule Iso8583.Bitmap do
         "41": "12345678",
         "6": "000000005000"
       }
-      iex>Bitmap.fields_0_127_binary(message)
+      iex>Bitmap.fields_0_127(message)
       "F40006C1A08000000000000000000000"
 
   """
-
-  # TODO: Configurable message format
-
-  @message_format :map
-  def fields_0_127_binary(message) do
+  def fields_0_127(message) do
     create_bitmap(message, 128)
+    |> List.replace_at(0, 1)
     |> ensure_127(message)
     |> Enum.join()
+    |> Utils.pad_string(0, 128)
     |> Utils.binary_to_hex()
+    |> Utils.pad_string("0", 32)
   end
 
-  def fields_127_0_63_binary(message) do
+  @doc """
+  Function to create bitmap for fields 127.0-39 Takes a message `map` and creates a bitmap representing all
+  the 127 extension fields 
+  in the message.
+  ## Examples
+
+      iex>message = %{
+      iex>"127.25": "7E1E5F7C0000000000000000200000000000000014A00000000310107C0000C2FF004934683D9B5D1447800280000000000000000410342031F024103021406010A03A42002008CE0D0C84042100000488004041709018000003276039079EDA",
+      iex>}
+      %{
+        "127.25": "7E1E5F7C0000000000000000200000000000000014A00000000310107C0000C2FF004934683D9B5D1447800280000000000000000410342031F024103021406010A03A42002008CE0D0C84042100000488004041709018000003276039079EDA",
+      }
+      iex>Bitmap.fields_0_127_0_39(message)
+      "0000008000000000"
+  """
+  def fields_0_127_0_39(message) do
     create_bitmap(message, 64, "127.")
+    |> List.replace_at(0, 0)
     |> Enum.join()
     |> Utils.binary_to_hex()
+    |> Utils.pad_string("0", 16)
   end
 
-  def fields_127_25_0_25_binary(message) do
+  @doc """
+  Function to create bitmap for fields 127.25.0-39 Takes a message `map` and creates a bitmap representing all
+  the 127.25 extension fields in the message.
+  ## Examples
+
+      iex>message = %{
+      iex>"127.25.1": "7E1E5F7C00000000",
+      iex>"127.25.12": "4934683D9B5D1447",
+      iex>"127.25.13": "80",
+      iex>"127.25.14": "0000000000000000410342031F02",
+      iex>"127.25.15": "410302",
+      iex>"127.25.18": "06010A03A42002",
+      iex>"127.25.2": "000000002000",
+      iex>"127.25.20": "008C",
+      iex>"127.25.21": "E0D0C8",
+      iex>"127.25.22": "404",
+      iex>"127.25.23": "21",
+      iex>"127.25.24": "0000048800",
+      iex>"127.25.26": "404",
+      iex>"127.25.27": "170901",
+      iex>"127.25.28": "00000327",
+      iex>"127.25.29": "60",
+      iex>"127.25.3": "000000000000",
+      iex>"127.25.30": "39079EDA",
+      iex>"127.25.4": "A0000000031010",
+      iex>"127.25.5": "7C00",
+      iex>"127.25.6": "00C2",
+      iex>"127.25.7": "FF00"
+      iex> }
+      %{
+        "127.25.1": "7E1E5F7C00000000",
+        "127.25.12": "4934683D9B5D1447",
+        "127.25.13": "80",
+        "127.25.14": "0000000000000000410342031F02",
+        "127.25.15": "410302",
+        "127.25.18": "06010A03A42002",
+        "127.25.2": "000000002000",
+        "127.25.20": "008C",
+        "127.25.21": "E0D0C8",
+        "127.25.22": "404",
+        "127.25.23": "21",
+        "127.25.24": "0000048800",
+        "127.25.26": "404",
+        "127.25.27": "170901",
+        "127.25.28": "00000327",
+        "127.25.29": "60",
+        "127.25.3": "000000000000",
+        "127.25.30": "39079EDA",
+        "127.25.4": "A0000000031010",
+        "127.25.5": "7C00",
+        "127.25.6": "00C2",
+        "127.25.7": "FF00"
+        }
+        iex>Bitmap.fields_0_127_25_0_33(message)
+        "7E1E5F7C00000000"
+  """
+  def fields_0_127_25_0_33(message) do
     create_bitmap(message, 64, "127.25.")
+    |> List.replace_at(0, 0)
     |> Enum.join()
     |> Utils.binary_to_hex()
+    |> Utils.pad_string("0", 16)
   end
 
-  def create_bitmap(message, length) do
+  defp create_bitmap(message, length) do
     List.duplicate(0, length)
-    |> List.replace_at(0, 1)
     |> comprehend(message, "", length)
   end
 
-  def create_bitmap(message, length, field_extension) do
+  defp create_bitmap(message, length, field_extension) do
     List.duplicate(0, length)
-    |> List.replace_at(0, 1)
     |> comprehend(message, field_extension, length)
   end
 
@@ -118,5 +191,4 @@ defmodule Iso8583.Bitmap do
   end
 
   defp ensure_127(bitmap, _), do: bitmap
-  
 end
