@@ -27,7 +27,7 @@ defmodule Iso8583.Encode do
     |> Utils.hex_to_binary()
     |> Utils.pad_string("0", 64)
     |> String.graphemes()
-    |> Enum.map(fn n -> String.to_integer(n) end)
+    |> Enum.map(&String.to_integer/1)
     |> loop_bitmap(message, message[:"0"])
     |> Utils.encode_tcp_header()
   end
@@ -38,7 +38,7 @@ defmodule Iso8583.Encode do
       |> Utils.hex_to_binary()
       |> Utils.pad_string("0", 64)
       |> String.graphemes()
-      |> Enum.map(fn n -> String.to_integer(n) end)
+      |> Enum.map(&String.to_integer/1)
       |> loop_bitmap(message, message[:"127.25.1"], "127.25.")
       |> encode_length_indicator("127.25", Formats.format(:"127.25"))
 

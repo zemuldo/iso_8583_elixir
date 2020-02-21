@@ -18,6 +18,11 @@ defmodule Iso8583.Utils do
     |> Base.decode16!()
   end
 
+  def bytes_to_hex(hexa_string) do
+    hexa_string
+    |> Base.encode16()
+  end
+
   def create_bitmap_array(length) do
     List.duplicate(0, length) |> List.replace_at(0, 1)
   end
