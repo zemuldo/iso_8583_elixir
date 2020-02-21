@@ -1,4 +1,7 @@
 defmodule Iso8583.Utils do
+
+  @moduledoc false
+  
   def binary_to_hex(string) do
     case Integer.parse(string, 2) do
       :error -> {:error, "Binary string is not valid"}

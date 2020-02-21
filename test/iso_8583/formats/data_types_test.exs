@@ -1,9 +1,9 @@
 defmodule Iso8583.Test.DataTypesTest do
   use ExUnit.Case
 
-  alias Iso8583.DataTypes
+  alias Iso8583.Formats.DataTypes
 
-  doctest Iso8583.DataTypes
+  doctest Iso8583.Formats.DataTypes
   
 
   describe "Data Types" do
