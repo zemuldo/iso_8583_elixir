@@ -1,4 +1,5 @@
 defmodule Iso8583.Decode do
+  @moduledoc false
   alias Iso8583.Utils
   alias Iso8583.Formats
 

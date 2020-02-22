@@ -1,8 +1,5 @@
 defmodule Iso8583.Encode do
-  @moduledoc """
-  This module contains functions for encoding an ISO 8583 message in JSON format or Just an Elixir map into 
-  Binary data using the configured formats and data types.
-  """
+  @moduledoc false
 
   @bitmap_encoding :hex
   @len_header true

@@ -1,4 +1,5 @@
 defmodule Iso8583.Test.DataTypesTest do
+  @moduledoc false
   use ExUnit.Case
 
   alias Iso8583.Formats.DataTypes

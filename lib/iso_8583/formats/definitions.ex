@@ -4,7 +4,7 @@ defmodule Iso8583.Formats.Definitions do
     quote do
       alias Iso8583.Utils
       @custom_formats %{}
-      @default_formats %{
+      @formats_definitions %{
                          "0": %{
                            content_type: "n",
                            label: "Message Type Indicator",
@@ -22,7 +22,7 @@ defmodule Iso8583.Formats.Definitions do
                            label: "Primary account number (PAN)",
                            len_type: "llvar",
                            max_len: 19,
-                           MinLen: 1
+                           min_len: 1
                          },
                          "3": %{
                            content_type: "n",
@@ -749,7 +749,7 @@ defmodule Iso8583.Formats.Definitions do
                            label: "Reserved for private use",
                            len_type: "lllvar",
                            max_len: 999,
-                           MinLen: 15
+                           min_len: 15
                          },
                          "124": %{
                            content_type: "ans",
@@ -786,7 +786,7 @@ defmodule Iso8583.Formats.Definitions do
                            label: "Switch Key",
                            len_type: "llvar",
                            max_len: 32,
-                           MinLen: 12
+                           min_len: 12
                          },
                          "127.3": %{
                            content_type: "ans",
@@ -817,21 +817,21 @@ defmodule Iso8583.Formats.Definitions do
                            label: "Check Data",
                            len_type: "llvar",
                            max_len: 50,
-                           MinLen: 10
+                           min_len: 10
                          },
                          "127.8": %{
                            content_type: "ans",
                            label: "Retention Data",
                            len_type: "lllvar",
                            max_len: 999,
-                           MinLen: 100
+                           min_len: 100
                          },
                          "127.9": %{
                            content_type: "ans",
                            label: "Additional Node Data",
                            len_type: "lllvar",
                            max_len: 255,
-                           MinLen: 100
+                           min_len: 100
                          },
                          "127.10": %{
                            content_type: "n",
@@ -844,14 +844,14 @@ defmodule Iso8583.Formats.Definitions do
                            label: "Original Key",
                            len_type: "llvar",
                            max_len: 32,
-                           MinLen: 10
+                           min_len: 10
                          },
                          "127.12": %{
                            content_type: "ans",
                            label: "Terminal Owner",
                            len_type: "llvar",
                            max_len: 25,
-                           MinLen: 10
+                           min_len: 10
                          },
                          "127.13": %{
                            content_type: "ans",
@@ -870,7 +870,7 @@ defmodule Iso8583.Formats.Definitions do
                            label: "Address Verification Data",
                            len_type: "llvar",
                            max_len: 29,
-                           MinLen: 10
+                           min_len: 10
                          },
                          "127.16": %{
                            content_type: "ans",
@@ -883,14 +883,14 @@ defmodule Iso8583.Formats.Definitions do
                            label: "Cardholder Information",
                            len_type: "llvar",
                            max_len: 50,
-                           MinLen: 10
+                           min_len: 10
                          },
                          "127.18": %{
                            content_type: "ans",
                            label: "Validation data",
                            len_type: "llvar",
                            max_len: 50,
-                           MinLen: 10
+                           min_len: 10
                          },
                          "127.19": %{
                            content_type: "ans",
@@ -909,14 +909,14 @@ defmodule Iso8583.Formats.Definitions do
                            label: "Record identification",
                            len_type: "llvar",
                            max_len: 12,
-                           MinLen: 10
+                           min_len: 10
                          },
                          "127.22": %{
                            content_type: "ans",
                            label: "Structured Data",
                            len_type: "lllllvar",
                            max_len: 99999,
-                           MinLen: 10000
+                           min_len: 10000
                          },
                          "127.23": %{
                            content_type: "ans",
@@ -929,14 +929,14 @@ defmodule Iso8583.Formats.Definitions do
                            label: "Payer account",
                            len_type: "llvar",
                            max_len: 28,
-                           MinLen: 10
+                           min_len: 10
                          },
                          "127.25": %{
                            content_type: "ans",
                            label: "Integrated circuit card (ICC) Data",
                            len_type: "llllvar",
                            max_len: 8000,
-                           MinLen: 1000
+                           min_len: 1000
                          },
                          "127.25.1": %{
                            content_type: "b",
@@ -961,7 +961,7 @@ defmodule Iso8583.Formats.Definitions do
                            label: "Application Identifier",
                            len_type: "llvar",
                            max_len: 32,
-                           MinLen: 10
+                           min_len: 10
                          },
                          "127.25.5": %{
                            content_type: "ans",
@@ -1142,7 +1142,7 @@ defmodule Iso8583.Formats.Definitions do
                            label: "Original Node",
                            len_type: "llvar",
                            max_len: 12,
-                           MinLen: 10
+                           min_len: 10
                          },
                          "127.27": %{
                            content_type: "ans",
@@ -1173,14 +1173,14 @@ defmodule Iso8583.Formats.Definitions do
                            label: "Issuer Network ID",
                            len_type: "llvar",
                            max_len: 11,
-                           MinLen: 10
+                           min_len: 10
                          },
                          "127.32": %{
                            content_type: "b",
                            label: "UCAF data",
                            len_type: "llvar",
                            max_len: 33,
-                           MinLen: 10
+                           min_len: 10
                          },
                          "127.33": %{
                            content_type: "n",
@@ -1199,14 +1199,14 @@ defmodule Iso8583.Formats.Definitions do
                            label: "Acquirer Network ID",
                            len_type: "llvar",
                            max_len: 11,
-                           MinLen: 10
+                           min_len: 10
                          },
                          "127.36": %{
                            content_type: "ans",
                            label: "Customer ID",
                            len_type: "llvar",
                            max_len: 25,
-                           MinLen: 10
+                           min_len: 10
                          },
                          "127.37": %{
                            content_type: "an",
@@ -1219,7 +1219,7 @@ defmodule Iso8583.Formats.Definitions do
                            label: "Additional POS Data Code",
                            len_type: "llvar",
                            max_len: 99,
-                           MinLen: 10
+                           min_len: 10
                          },
                          "127.39": %{
                            content_type: "an",
@@ -1235,8 +1235,8 @@ defmodule Iso8583.Formats.Definitions do
                          }
                        }
                        |> Utils.atomify_map()
-
-      def default_formats, do: Map.merge(@default_formats, @custom_formats)
+      @doc false
+      def formats_definitions, do: Map.merge(@formats_definitions, @custom_formats)
     end
   end
 end
