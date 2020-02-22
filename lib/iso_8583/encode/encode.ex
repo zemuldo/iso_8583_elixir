@@ -1,13 +1,9 @@
 defmodule ISO8583.Encode do
   @moduledoc false
 
-  @bitmap_encoding :hex
-  @len_header true
-
   alias ISO8583.Bitmap
   alias ISO8583.Utils
   alias ISO8583.Formats
-  alias ISO8583.Encode.TCPLenHeader
   alias ISO8583.Decode
 
   def encode_0_127(message) do
@@ -56,10 +52,7 @@ defmodule ISO8583.Encode do
 
   def encoding_extensions(message, _), do: message
 
-  defp encode_with_extensions(_, rest_bitmaps, message, new_encoded, field_pad, counter),
-    do: message
-
-  defp loop_bitmap(bitmap, message, encoded \\ <<>>, field_pad \\ <<>>, counter \\ 0)
+  defp loop_bitmap(_bitmap, _message, _encoded \\ <<>>, _field_pad \\ <<>>, _counter \\ 0)
   defp loop_bitmap([], _, encoded, _, _), do: encoded
 
   defp loop_bitmap(bitmap, message, encoded, field_pad, counter) do
@@ -82,9 +75,18 @@ defmodule ISO8583.Encode do
     encode_length_indicator(data, field, format)
   end
 
-  defp encode_length_indicator(data, field, %{len_type: len_type} = format)
+  defp encode_length_indicator(data, _, %{len_type: len_type} = format)
        when len_type == "fixed" do
     data |> encode_data(format.content_type)
+  end
+
+  defp encode_length_indicator(data, _, format) do
+    max_len_chars = format |> get_len_type |> byte_size()
+
+    byte_size(data)
+    |> Integer.to_string()
+    |> Utils.padd_chars(max_len_chars, "0")
+    |> Kernel.<>(data |> encode_data(format.content_type))
   end
 
   defp encode_data(data, content_type) do
@@ -92,15 +94,6 @@ defmodule ISO8583.Encode do
       "b" -> Utils.hex_to_bytes(data)
       _ -> data
     end
-  end
-
-  defp encode_length_indicator(data, field, format) do
-    max_len_chars = format |> get_len_type |> byte_size()
-
-    byte_size(data)
-    |> Integer.to_string()
-    |> Utils.padd_chars(max_len_chars, "0")
-    |> Kernel.<>(data |> encode_data(format.content_type))
   end
 
   defp get_len_type(%{len_type: len_type}) do

@@ -100,12 +100,12 @@ defmodule ISO8583.Decode do
 
   defp extract_field_data(_, data, nil), do: {"", data}
 
-  defp extract_field_data(field, data, %{len_type: len_type} = format)
+  defp extract_field_data(_, data, %{len_type: len_type} = format)
        when len_type == "fixed" do
     {data |> String.slice(0, format.max_len), data |> String.slice(format.max_len..-1)}
   end
 
-  defp extract_field_data(field, data, %{len_type: len_type} = format) do
+  defp extract_field_data(_, data, %{len_type: _} = format) do
     len_indicator_length = Utils.var_len_chars(format)
     length = String.slice(data, 0, len_indicator_length)
     field_data_len = String.to_integer(length)

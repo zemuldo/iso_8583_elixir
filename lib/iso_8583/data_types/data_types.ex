@@ -127,7 +127,7 @@ defmodule ISO8583.DataTypes do
     end
   end
 
-  defp check_data_length(%{len_type: len_type} = format, field, data) do
+  defp check_data_length(%{len_type: _} = format, field, data) do
     case byte_size(data) <= format.max_len do
       true ->
         true
