@@ -34,7 +34,7 @@ defmodule Iso8583.Formats do
     |> get_format()
   end
 
-   @doc """
+  @doc """
   Get the format for a field, using atom.
   ## Examples
 
@@ -99,5 +99,7 @@ defmodule Iso8583.Formats do
   end
 
   defp get_format(field) when is_atom(field), do: formats_definitions()[field]
-  defp get_format(field) when is_binary(field), do: formats_definitions()[field |> String.to_atom()]
+
+  defp get_format(field) when is_binary(field),
+    do: formats_definitions()[field |> String.to_atom()]
 end

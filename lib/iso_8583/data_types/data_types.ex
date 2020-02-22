@@ -1,4 +1,4 @@
-defmodule Iso8583.Formats.DataTypes do
+defmodule Iso8583.DataTypes do
   @moduledoc """
   This module provides utilities for validation `ISO 8583` field data types based the description below pulled
   from a postilion interface documentation. Each character gets validated against the regex that defines each fata type.
@@ -17,6 +17,8 @@ defmodule Iso8583.Formats.DataTypes do
   - `b` - Binary representation of data
   - `z` - `Track 2` as defined in `ISO 7813`
   """
+
+  alias Iso8583.Formats
 
   defp test?("a", character) do
     Regex.match?(~r/[a-z]/i, character)
@@ -85,27 +87,110 @@ defmodule Iso8583.Formats.DataTypes do
     end
   end
 
+  defp check_data_length(field, data) when is_atom(field) do
+    field
+    |> Formats.format()
+    |> check_data_length(field, data)
+  end
+
+  defp check_data_length(field, data) when is_integer(field) do
+    field =
+      field
+      |> Integer.to_string()
+      |> String.to_atom()
+
+    field
+    |> Formats.format()
+    |> check_data_length(field, data)
+  end
+
+  defp check_data_length(field, data) do
+    field =
+      field
+      |> String.to_atom()
+
+    field
+    |> Formats.format()
+    |> check_data_length(field, data)
+  end
+
+  defp check_data_length(%{len_type: "fixed"} = format, field, data) do
+    case byte_size(data) == format.max_len do
+      true ->
+        true
+
+      false ->
+        {:error,
+         "Invalid length of data on field #{field}, expected #{format.max_len} , found #{
+           byte_size(data)
+         }"}
+    end
+  end
+
+  defp check_data_length(%{len_type: len_type} = format, field, data) do
+    case byte_size(data) <= format.max_len do
+      true ->
+        true
+
+      false ->
+        {:error,
+         "Invalid length of data on field #{field}, expected maximum of #{format.max_len} , found #{
+           byte_size(data)
+         }"}
+    end
+  end
+
   @doc """
   Function to validate the data type in a field, returns `true` if all characters in a field matches the type otherwize return false
   ## Examples
 
-      iex> DataTypes.valid?("67", "x+n", "C99")
+      iex> DataTypes.valid?("2", "n", "440044444444444")
       true
-      iex> DataTypes.valid?("67", "x+n", "AAAs&sdsd")
-      {:error, "Data type x+n must be presceeded with c or d"}
-      iex> DataTypes.valid?("67", "x+n", "ca%")
-      {:error, "While processing field 67 data provided is not of type 'x+n'"}
+      iex> DataTypes.valid?("2", "n", "440044444444444R")
+      {:error, "While processing field 2 data provided is not of type 'n'"}
+      iex> DataTypes.valid?("2", "n", "44004444444444499999999")
+      {:error, "Invalid length of data on field 2, expected maximum of 19 , found 23"}
 
   """
 
   def valid?(field, "x+n", string_data) do
-    case Regex.match?(~r/[c,d]/i, String.at(string_data, 0)) do
-      true -> run_validation(field, "x+n", string_data)
-      false -> {:error, "Data type x+n must be presceeded with c or d"}
+    with true <- Regex.match?(~r/[c,d]/i, String.at(string_data, 0)),
+         true <- run_validation(field, "x+n", string_data),
+         true <- check_data_length(field, string_data) do
+      true
+    else
+      error ->
+        case error do
+          false -> {:error, "Data type x+n must be presceeded with c or d"}
+          _ -> error
+        end
     end
   end
 
   def valid?(field, type, string_data) do
-    run_validation(field, type, string_data)
+    with true <- run_validation(field, type, string_data),
+         true <- check_data_length(field, string_data) do
+      true
+    else
+      error -> error
+    end
+  end
+
+  @doc false
+  def valid?(message) do
+    try do
+      for {key, value} <- message do
+        %{content_type: type} = Formats.format(key)
+
+        case valid?(key, type, value) do
+          true -> true
+          error -> throw(error)
+        end
+      end
+
+      {:ok, message}
+    catch
+      error -> error
+    end
   end
 end

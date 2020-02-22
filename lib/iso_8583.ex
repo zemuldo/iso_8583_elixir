@@ -6,6 +6,7 @@ defmodule Iso8583 do
 
   import Iso8583.Encode
   import Iso8583.Decode
+  alias Iso8583.DataTypes
   alias Iso8583.Utils
 
   @doc """
@@ -149,7 +150,6 @@ defmodule Iso8583 do
     message
     |> encoding_extensions(:"127.25")
   end
-  
 
   @doc """
   Function to encode json or Elixir map into ISO 8583 encoded binary. Use this to encode all fields that are supported.
@@ -246,8 +246,87 @@ defmodule Iso8583 do
     |> expand_field("127.25.")
   end
 
-  def decode_127_25(message) do
+  @doc """
+  Function check if json message is valid.
+  ## Examples
+      iex> message = %{
+      iex>   "0": "0800",
+      iex>   "7": "0818160244",
+      iex>   "11": "646465",
+      iex>   "12": "160244",
+      iex>   "13": "0818",
+      iex>   "70": "001"
+      iex> }
+      %{
+      "0": "0800",
+      "11": "646465",
+      "12": "160244",
+      "13": "0818",
+      "7": "0818160244",
+      "70": "001"
+      }
+      iex>Iso8583.valid?(message)
+      {:ok, message}
+      iex> message = <<0, 49, 48, 56, 48, 48, 130, 56, 0, 0, 0, 0,
+      iex> 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 48, 56, 49, 56, 
+      iex> 49, 54, 48, 50, 52, 52, 54, 52, 54, 52, 54, 53,
+      iex> 49, 54, 48, 50, 52, 52, 48, 56, 49, 56, 48, 48, 
+      iex> 49>>
+      iex>Iso8583.valid?(message)
+      {:ok, %{
+      "0": "0800",
+      "11": "646465",
+      "12": "160244",
+      "13": "0818",
+      "7": "0818160244",
+      "70": "001"
+      }}
+  """
+  @doc """
+  Function check if json message is valid.
+  ## Examples
+      iex> message = %{
+      iex>   "0": "0800",
+      iex>   "7": "0818160244",
+      iex>   "11": "646465",
+      iex>   "12": "160244",
+      iex>   "13": "0818",
+      iex>   "70": "001"
+      iex> }
+      %{
+      "0": "0800",
+      "11": "646465",
+      "12": "160244",
+      "13": "0818",
+      "7": "0818160244",
+      "70": "001"
+      }
+      iex>Iso8583.valid?(message)
+      {:ok, message}
+      iex> message = <<0, 49, 48, 56, 48, 48, 130, 56, 0, 0, 0, 0,
+      iex> 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 48, 56, 49, 56, 
+      iex> 49, 54, 48, 50, 52, 52, 54, 52, 54, 52, 54, 53,
+      iex> 49, 54, 48, 50, 52, 52, 48, 56, 49, 56, 48, 48, 
+      iex> 49>>
+      iex>Iso8583.valid?(message)
+      {:ok, %{
+      "0": "0800",
+      "11": "646465",
+      "12": "160244",
+      "13": "0818",
+      "7": "0818160244",
+      "70": "001"
+      }}
+  """
+  def valid?(message) when is_map(message) do
     message
-    |> expand_field("127.25.")
+    |> Utils.atomify_map()
+    |> DataTypes.valid?()
+  end
+  
+  def valid?(message) when is_binary(message) do
+    message
+    |> decode()
+    |> DataTypes.valid?()
   end
 end
