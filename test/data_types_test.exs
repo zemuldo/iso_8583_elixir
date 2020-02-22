@@ -1,13 +1,13 @@
-defmodule Iso8583.Test.DataTypesTest do
+defmodule ISO8583.Test.DataTypesTest do
   @moduledoc false
   use ExUnit.Case
 
-  alias Iso8583.DataTypes
+  alias ISO8583.DataTypes
 
-  doctest Iso8583.DataTypes
+  doctest ISO8583.DataTypes
 
   describe "Data Types" do
-    use Iso8583.Test.Setup
+    use ISO8583.Test.Setup
 
     test "should test unknown type" do
       assert DataTypes.valid?("2", "aa", "ABCD") == {:error, "Data type aa is not implemented"}

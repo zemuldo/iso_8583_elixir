@@ -1,7 +1,7 @@
-defmodule Iso8583.Decode do
+defmodule ISO8583.Decode do
   @moduledoc false
-  alias Iso8583.Utils
-  alias Iso8583.Formats
+  alias ISO8583.Utils
+  alias ISO8583.Formats
 
   @tcp_len_header true
   @bitmap_encoding :hex

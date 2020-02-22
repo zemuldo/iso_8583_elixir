@@ -1,5 +1,5 @@
-defmodule Iso8583.Bitmap do
-  alias Iso8583.Utils
+defmodule ISO8583.Bitmap do
+  alias ISO8583.Utils
 
   @message_format :map
   @moduledoc """

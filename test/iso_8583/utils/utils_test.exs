@@ -1,7 +1,7 @@
-defmodule Iso8583.Test.UtilsTest do
+defmodule ISO8583.Test.UtilsTest do
   use ExUnit.Case
 
-  alias Iso8583.Utils
+  alias ISO8583.Utils
 
   doctest Utils
 

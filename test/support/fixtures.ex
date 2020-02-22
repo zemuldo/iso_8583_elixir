@@ -1,3 +1,3 @@
-defmodule Iso8583.Test.Fixtures do
-  use Iso8583.Test.Message
+defmodule ISO8583.Test.Fixtures do
+  use ISO8583.Test.Message
 end

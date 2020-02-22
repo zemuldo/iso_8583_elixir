@@ -1,4 +1,4 @@
-defmodule Iso8583.Utils do
+defmodule ISO8583.Utils do
   @moduledoc false
 
   def binary_to_hex(string) do

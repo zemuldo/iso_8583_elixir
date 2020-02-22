@@ -1,11 +1,11 @@
 defmodule BitmapTest do
   use ExUnit.Case
-  alias Iso8583.Bitmap
+  alias ISO8583.Bitmap
   doctest Bitmap
 
-  use Iso8583.Test.Setup
+  use ISO8583.Test.Setup
 
-  import Iso8583.Test.Fixtures
+  import ISO8583.Test.Fixtures
 
   test "should encode bitmap case 0" do
     assert Bitmap.fields_0_127(fixture_message(:"0100")) == "F21C46C1A0E091000000000000000022"

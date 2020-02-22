@@ -1,9 +1,9 @@
-defmodule Iso8583.Test.EncodeTest do
+defmodule ISO8583.Test.EncodeTest do
   use ExUnit.Case
 
-  import Iso8583.Test.Fixtures
+  import ISO8583.Test.Fixtures
 
-  alias Iso8583.Encode
+  alias ISO8583.Encode
 
   doctest Encode
 end

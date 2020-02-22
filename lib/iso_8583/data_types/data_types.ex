@@ -1,4 +1,4 @@
-defmodule Iso8583.DataTypes do
+defmodule ISO8583.DataTypes do
   @moduledoc """
   This module provides utilities for validation `ISO 8583` field data types based the description below pulled
   from a postilion interface documentation. Each character gets validated against the regex that defines each fata type.
@@ -18,7 +18,7 @@ defmodule Iso8583.DataTypes do
   - `z` - `Track 2` as defined in `ISO 7813`
   """
 
-  alias Iso8583.Formats
+  alias ISO8583.Formats
 
   defp test?("a", character) do
     Regex.match?(~r/[a-z]/i, character)

@@ -1,9 +1,9 @@
-defmodule Iso8583.Formats.Definitions do
+defmodule ISO8583.Formats.Definitions do
   @moduledoc false
   # TODO: Configure default formats and merge.
   defmacro __using__(_) do
     quote do
-      alias Iso8583.Utils
+      alias ISO8583.Utils
       @custom_formats %{}
       @formats_definitions %{
                              "0": %{

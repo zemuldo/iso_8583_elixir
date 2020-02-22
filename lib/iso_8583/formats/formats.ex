@@ -1,8 +1,8 @@
-defmodule Iso8583.Formats do
+defmodule ISO8583.Formats do
   @moduledoc """
   Formats defines the default ISO 8583 formats for all supported fields.
   """
-  use Iso8583.Formats.Definitions
+  use ISO8583.Formats.Definitions
 
   @doc """
   Get the format for a field using string.

@@ -1,14 +1,14 @@
-defmodule Iso8583.Encode do
+defmodule ISO8583.Encode do
   @moduledoc false
 
   @bitmap_encoding :hex
   @len_header true
 
-  alias Iso8583.Bitmap
-  alias Iso8583.Utils
-  alias Iso8583.Formats
-  alias Iso8583.Encode.TCPLenHeader
-  alias Iso8583.Decode
+  alias ISO8583.Bitmap
+  alias ISO8583.Utils
+  alias ISO8583.Formats
+  alias ISO8583.Encode.TCPLenHeader
+  alias ISO8583.Decode
 
   def encode_0_127(message) do
     message =
