@@ -1,6 +1,6 @@
 # ISO8583
 
-**TODO: Add description**
+An ISO 8583 messaging library for Elixir. Supports message validation, encoding and decoding. [See the docs](https://hexdocs.pm/iso_8583)
 
 ## Installation
 
@@ -15,7 +15,6 @@ def deps do
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/iso_8583](https://hexdocs.pm/iso_8583).
+## Customization and Configuration
 
+Coming soon.
