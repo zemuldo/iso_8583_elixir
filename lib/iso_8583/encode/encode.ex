@@ -21,7 +21,7 @@ defmodule ISO8583.Encode do
     |> Utils.pad_string("0", 64)
     |> String.graphemes()
     |> Enum.map(&String.to_integer/1)
-    |> loop_bitmap(message, message[:"0"])
+    |> loop_bitmap(message, message[:"0"], <<>>, 0)
     |> Utils.encode_tcp_header()
   end
 
@@ -32,7 +32,7 @@ defmodule ISO8583.Encode do
       |> Utils.pad_string("0", 64)
       |> String.graphemes()
       |> Enum.map(&String.to_integer/1)
-      |> loop_bitmap(message, message[:"127.25.1"], "127.25.")
+      |> loop_bitmap(message, message[:"127.25.1"], "127.25.", 0)
       |> encode_length_indicator("127.25", Formats.format(:"127.25"))
 
     Map.merge(message, %{"127.25": data})
@@ -45,14 +45,13 @@ defmodule ISO8583.Encode do
       |> Utils.pad_string("0", 64)
       |> String.graphemes()
       |> Enum.map(fn n -> String.to_integer(n) end)
-      |> loop_bitmap(message, message[:"127.1"], "127.")
+      |> loop_bitmap(message, message[:"127.1"], "127.", 0)
 
     Map.merge(message, %{"127": data})
   end
 
   def encoding_extensions(message, _), do: message
 
-  defp loop_bitmap(_bitmap, _message, _encoded \\ <<>>, _field_pad \\ <<>>, _counter \\ 0)
   defp loop_bitmap([], _, encoded, _, _), do: encoded
 
   defp loop_bitmap(bitmap, message, encoded, field_pad, counter) do
