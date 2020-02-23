@@ -1,24 +1,20 @@
 defmodule ISO8583.Decode do
   @moduledoc false
   alias ISO8583.Utils
-  alias ISO8583.Formats
-
-  @tcp_len_header true
-  @bitmap_encoding :hex
 
   def decode_0_127(message, opts) do
     with {:ok, _, chunk1} <- extract_tcp_len_header(message, opts),
          {:ok, mti, chunk2} <- extract_mti(chunk1),
-         {:ok, bitmap, chunk3} <- extract_bitmap(chunk2),
-         data <- extract_children(bitmap, chunk3, "", %{}, 0) do
+         {:ok, bitmap, chunk3} <- extract_bitmap(chunk2, opts),
+         data <- extract_children(bitmap, chunk3, "", %{}, 0, opts) do
       data |> Map.merge(%{"0": mti})
     else
       error -> error
     end
   end
 
-  defp extract_bitmap(message) do
-    case @bitmap_encoding do
+  defp extract_bitmap(message, opts) do
+    case opts.bitmap_encoding do
       :hex ->
         bitmap =
           message
@@ -62,39 +58,39 @@ defmodule ISO8583.Decode do
 
   def expand_field(%{"127": data} = message, "127.", opts) do
     message
-    |> Map.merge(expand_binary(data, "127."))
+    |> Map.merge(expand_binary(data, "127.", opts))
   end
 
   def expand_field(%{"127.25": data} = message, "127.25.", opts) do
     message
-    |> Map.merge(expand_binary(data, "127.25."))
+    |> Map.merge(expand_binary(data, "127.25.", opts))
   end
 
   def expand_field(message, _, _), do: message
 
-  def expand_binary(data, field_pad) do
+  def expand_binary(data, field_pad, opts) do
     data
     |> String.slice(0, 16)
     |> Utils.hex_to_binary()
     |> Utils.pad_string("0", 64)
     |> String.graphemes()
-    |> extract_children(data |> String.slice(16..-1), field_pad, %{}, 0)
+    |> extract_children(data |> String.slice(16..-1), field_pad, %{}, 0, opts)
   end
 
-  defp extract_children([], _, _, extracted, _), do: extracted
+  defp extract_children([], _, _, extracted, _, _), do: extracted
 
-  defp extract_children(bitmap, data, pad, extracted, counter) do
+  defp extract_children(bitmap, data, pad, extracted, counter, opts) do
     [current | rest] = bitmap
     field = Utils.construct_field(counter + 1, pad)
 
     case current do
       "1" ->
-        {field_data, left} = extract_field_data(field, data, field |> Formats.format())
+        {field_data, left} = extract_field_data(field, data, opts.formats[field])
         extracted = extracted |> Map.put(field, field_data)
-        extract_children(rest, left, pad, extracted, counter + 1)
+        extract_children(rest, left, pad, extracted, counter + 1, opts)
 
       "0" ->
-        extract_children(rest, data, pad, extracted, counter + 1)
+        extract_children(rest, data, pad, extracted, counter + 1, opts)
     end
   end
 

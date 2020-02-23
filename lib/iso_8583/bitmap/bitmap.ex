@@ -1,7 +1,6 @@
 defmodule ISO8583.Bitmap do
   alias ISO8583.Utils
 
-  @message_format :map
   @moduledoc """
   This module is for building the bitmaps. It supports both Primary, Secondary and Tertiary bitmaps for fields `0-127`. You can also 
   use the same module to build bitamps for extended fields like `127.0-39` and `127.25.0-33`
@@ -47,7 +46,9 @@ defmodule ISO8583.Bitmap do
 
   """
   def fields_0_127(message) do
-    create_bitmap(message, 128)
+    message
+    |> Utils.atomify_map()
+    |> create_bitmap(128)
     |> List.replace_at(0, 1)
     |> ensure_127(message)
     |> Enum.join()
@@ -72,7 +73,9 @@ defmodule ISO8583.Bitmap do
       "0000008000000000"
   """
   def fields_0_127_0_39(message) do
-    create_bitmap(message, 64, "127.")
+    message
+    |> Utils.atomify_map()
+    |> create_bitmap(64, "127.")
     |> List.replace_at(0, 0)
     |> Enum.join()
     |> Utils.binary_to_hex()
@@ -136,7 +139,9 @@ defmodule ISO8583.Bitmap do
       "7E1E5F7C00000000"
   """
   def fields_0_127_25_0_33(message) do
-    create_bitmap(message, 64, "127.25.")
+    message
+    |> Utils.atomify_map()
+    |> create_bitmap(64, "127.25.")
     |> List.replace_at(0, 0)
     |> Enum.join()
     |> Utils.binary_to_hex()
@@ -160,7 +165,10 @@ defmodule ISO8583.Bitmap do
   end
 
   defp comprehend(list, message, field_extension, length, iteration) do
-    field = build_field(field_extension, iteration + 1)
+    field =
+      field_extension
+      |> Kernel.<>(Integer.to_string(iteration + 1))
+      |> String.to_atom()
 
     case Map.get(message, field) do
       nil ->
@@ -171,18 +179,6 @@ defmodule ISO8583.Bitmap do
         list
         |> List.replace_at(iteration, 1)
         |> comprehend(message, field_extension, length, iteration + 1)
-    end
-  end
-
-  defp build_field(extension, field) do
-    case @message_format do
-      :map ->
-        extension
-        |> Kernel.<>(Integer.to_string(field))
-        |> String.to_atom()
-
-      :json ->
-        extension <> Integer.to_string(field)
     end
   end
 

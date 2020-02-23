@@ -1,7 +1,5 @@
 defmodule ISO8583.Formats do
-  @moduledoc """
-  Formats defines the default ISO 8583 formats for all supported fields.
-  """
+  @moduledoc false
   use ISO8583.Formats.Definitions
 
   @doc """
