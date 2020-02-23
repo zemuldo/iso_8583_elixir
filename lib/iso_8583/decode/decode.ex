@@ -7,7 +7,7 @@ defmodule ISO8583.Decode do
   @bitmap_encoding :hex
 
   def decode_0_127(message, opts) do
-    with {:ok, _, chunk1} <- extract_tcp_len_header(message),
+    with {:ok, _, chunk1} <- extract_tcp_len_header(message, opts),
          {:ok, mti, chunk2} <- extract_mti(chunk1),
          {:ok, bitmap, chunk3} <- extract_bitmap(chunk2),
          data <- extract_children(bitmap, chunk3, "", %{}, 0) do
@@ -46,8 +46,8 @@ defmodule ISO8583.Decode do
     {:ok, mti, message}
   end
 
-  defp extract_tcp_len_header(message) do
-    case @tcp_len_header do
+  defp extract_tcp_len_header(message, opts) do
+    case opts.tcp_len_header do
       true ->
         tcp_len_header =
           message |> binary_part(0, 2) |> Utils.bytes_to_hex() |> String.to_integer()
