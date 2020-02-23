@@ -6,7 +6,7 @@ defmodule ISO8583.Decode do
   @tcp_len_header true
   @bitmap_encoding :hex
 
-  def decode_0_127(message) do
+  def decode_0_127(message, opts) do
     with {:ok, _, chunk1} <- extract_tcp_len_header(message),
          {:ok, mti, chunk2} <- extract_mti(chunk1),
          {:ok, bitmap, chunk3} <- extract_bitmap(chunk2),
@@ -60,17 +60,17 @@ defmodule ISO8583.Decode do
     end
   end
 
-  def expand_field(%{"127": data} = message, "127.") do
+  def expand_field(%{"127": data} = message, "127.", opts) do
     message
     |> Map.merge(expand_binary(data, "127."))
   end
 
-  def expand_field(%{"127.25": data} = message, "127.25.") do
+  def expand_field(%{"127.25": data} = message, "127.25.", opts) do
     message
     |> Map.merge(expand_binary(data, "127.25."))
   end
 
-  def expand_field(message, _), do: message
+  def expand_field(message, _, _), do: message
 
   def expand_binary(data, field_pad) do
     data

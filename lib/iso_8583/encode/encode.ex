@@ -6,14 +6,14 @@ defmodule ISO8583.Encode do
   alias ISO8583.Formats
   alias ISO8583.Decode
 
-  def encode_0_127(message) do
+  def encode_0_127(message, opts) do
     message =
       message
       |> Map.put(:"1", Bitmap.fields_0_127(message))
-      |> Decode.expand_field("127.")
-      |> Decode.expand_field("127.25.")
-      |> encoding_extensions(:"127.25")
-      |> encoding_extensions(:"127")
+      |> Decode.expand_field("127.", opts)
+      |> Decode.expand_field("127.25.", opts)
+      |> encoding_extensions(:"127.25", opts)
+      |> encoding_extensions(:"127", opts)
 
     message
     |> Bitmap.fields_0_127()
@@ -25,7 +25,7 @@ defmodule ISO8583.Encode do
     |> Utils.encode_tcp_header()
   end
 
-  def encoding_extensions(%{"127.25.1": _} = message, :"127.25") do
+  def encoding_extensions(%{"127.25.1": _} = message, :"127.25", opts) do
     data =
       message[:"127.25.1"]
       |> Utils.hex_to_binary()
@@ -38,7 +38,7 @@ defmodule ISO8583.Encode do
     Map.merge(message, %{"127.25": data})
   end
 
-  def encoding_extensions(%{"127.1": _} = message, :"127") do
+  def encoding_extensions(%{"127.1": _} = message, :"127", opts) do
     data =
       message[:"127.1"]
       |> Utils.hex_to_binary()
@@ -50,7 +50,7 @@ defmodule ISO8583.Encode do
     Map.merge(message, %{"127": data})
   end
 
-  def encoding_extensions(message, _), do: message
+  def encoding_extensions(message, _, _), do: message
 
   defp loop_bitmap([], _, encoded, _, _), do: encoded
 
