@@ -32,7 +32,7 @@ defmodule ISO8583.Encode do
       |> String.graphemes()
       |> Enum.map(&String.to_integer/1)
       |> loop_bitmap(message, message[:"127.25.1"], "127.25.", 0, opts)
-      |> encode_length_indicator("127.25", opts.formats[:"127.25"])
+      |> encode_length_indicator("127.25", opts[:formats][:"127.25"])
 
     Map.merge(message, %{"127.25": data})
   end
@@ -69,7 +69,7 @@ defmodule ISO8583.Encode do
   end
 
   defp encode_field(field, data, opts) do
-    format = opts.formats[field]
+    format = opts[:formats][field]
     encode_length_indicator(data, field, format)
   end
 

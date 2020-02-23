@@ -10,6 +10,7 @@ defmodule ISO8583.MixProject do
       start_permanent: Mix.env() == :prod,
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
+      preferred_cli_env: [docs: :docs],
       deps: deps(),
       package: package(),
       description: description()

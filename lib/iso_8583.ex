@@ -38,11 +38,12 @@ defmodule ISO8583 do
       49>>
   """
 
-  def encode(message, opts \\ default_opts()) do
+  def encode(message, opts \\ []) do
     opts = opts |> default_opts()
-      message
-      |> Utils.atomify_map()
-      |> encode_0_127(opts)
+
+    message
+    |> Utils.atomify_map()
+    |> encode_0_127(opts)
   end
 
   @doc """
@@ -64,8 +65,9 @@ defmodule ISO8583 do
         "127.25": "7E1E5F7C0000000000000000500000000000000014A00000000310105C000128FF0061F379D43D5AEEBC8002800000000000000001E0302031F000203001406010A03A09000008CE0D0C840421028004880040417091180000014760BAC24959"
       }
   """
-  def encode_127(message, opts \\ default_opts()) do
+  def encode_127(message, opts \\ []) do
     opts = opts |> default_opts()
+
     message
     |> encoding_extensions(:"127", opts)
   end
@@ -149,8 +151,9 @@ defmodule ISO8583 do
         "127.25.7": "FF00"
       }
   """
-  def encode_127_25(message, opts \\ default_opts()) do
+  def encode_127_25(message, opts \\ []) do
     opts = opts |> default_opts()
+
     message
     |> encoding_extensions(:"127.25", opts)
   end
@@ -175,8 +178,9 @@ defmodule ISO8583 do
       }
   """
 
-  def decode(message, opts \\ default_opts()) do
+  def decode(message, opts \\ []) do
     opts = opts |> default_opts()
+
     message
     |> decode_0_127(opts)
   end
@@ -197,15 +201,18 @@ defmodule ISO8583 do
           "127.25": "7E1E5F7C0000000000000000500000000000000014A00000000310105C000128FF0061F379D43D5AEEBC8002800000000000000001E0302031F000203001406010A03A09000008CE0D0C840421028004880040417091180000014760BAC24959"
        }
   """
-  def decode_127(message, opts \\ default_opts())
+  def decode_127(message, opts \\ [])
+
   def decode_127(message, opts) when is_binary(message) do
     opts = opts |> default_opts()
+
     message
     |> expand_binary("127.", opts)
   end
 
   def decode_127(message, opts) do
     opts = opts |> default_opts()
+
     message
     |> expand_field("127.", opts)
   end
@@ -249,8 +256,9 @@ defmodule ISO8583 do
         "127.25.7": "FF00"
       }
   """
-  def decode_127_25(message, opts \\ default_opts()) do
+  def decode_127_25(message, opts \\ []) do
     opts = opts |> default_opts()
+
     message
     |> expand_field("127.25.", opts)
   end
@@ -291,9 +299,11 @@ defmodule ISO8583 do
       "70": "001"
       }}
   """
-  def valid?(message, opts \\ default_opts())
+  def valid?(message, opts \\ [])
+
   def valid?(message, opts) when is_map(message) do
     opts = opts |> default_opts()
+
     message
     |> Utils.atomify_map()
     |> DataTypes.valid?(opts)
@@ -301,32 +311,33 @@ defmodule ISO8583 do
 
   def valid?(message, opts) when is_binary(message) do
     opts = opts |> default_opts()
+
     message
     |> decode()
     |> DataTypes.valid?(opts)
   end
 
-  defp default_opts() do
-    %{bitmap_encoding: :hex, tcp_len_header: true, formats: Formats.formats_definitions()}
+  defp default_opts([]) do
+    [bitmap_encoding: :hex, tcp_len_header: true, formats: Formats.formats_definitions()]
   end
 
   defp default_opts(opts) do
-    default_opts()
-    |> Map.merge(opts)
+    default_opts([])
+    |> Keyword.merge(opts)
     |> configure_formats()
   end
 
   defp configure_formats(%{formats: nil} = opts) do
     opts
-    |> Map.put(:formats, Formats.formats_definitions())
+    |> Keyword.put(:formats, Formats.formats_definitions())
   end
 
-  defp configure_formats(%{formats: formats} = opts) when is_map(formats) do
+  defp configure_formats([formats: formats] = opts) when is_map(formats) do
     formats_with_customs =
       Formats.formats_definitions()
       |> Map.merge(formats |> Utils.atomify_map())
 
     opts
-    |> Map.merge(%{formats: formats_with_customs})
+    |> Keyword.merge(%{formats: formats_with_customs})
   end
 end

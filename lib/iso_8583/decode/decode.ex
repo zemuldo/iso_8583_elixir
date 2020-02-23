@@ -14,7 +14,7 @@ defmodule ISO8583.Decode do
   end
 
   defp extract_bitmap(message, opts) do
-    case opts.bitmap_encoding do
+    case opts[:bitmap_encoding] do
       :hex ->
         bitmap =
           message
@@ -43,7 +43,7 @@ defmodule ISO8583.Decode do
   end
 
   defp extract_tcp_len_header(message, opts) do
-    case opts.tcp_len_header do
+    case opts[:tcp_len_header] do
       true ->
         tcp_len_header =
           message |> binary_part(0, 2) |> Utils.bytes_to_hex() |> String.to_integer()
@@ -85,7 +85,7 @@ defmodule ISO8583.Decode do
 
     case current do
       "1" ->
-        {field_data, left} = extract_field_data(field, data, opts.formats[field])
+        {field_data, left} = extract_field_data(field, data, opts[:formats][field])
         extracted = extracted |> Map.put(field, field_data)
         extract_children(rest, left, pad, extracted, counter + 1, opts)
 

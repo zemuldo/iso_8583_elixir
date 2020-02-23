@@ -180,7 +180,7 @@ defmodule ISO8583.DataTypes do
   def valid?(message, opts) do
     try do
       for {key, value} <- message do
-        %{content_type: type} = opts.formats[key]
+        %{content_type: type} = opts[:formats][key]
 
         case valid?(key, type, value) do
           true -> true
