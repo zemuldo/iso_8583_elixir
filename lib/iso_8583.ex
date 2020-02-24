@@ -1,5 +1,5 @@
 defmodule ISO8583 do
-  @moduledoc """
+  @moduledoc ~S"""
   ISO 8583 messaging library for Elixir. This library has utilities validate, encode and decode message 
   between systems using ISO 8583 regadless of the language the other system is written in. 
   """
@@ -327,17 +327,19 @@ defmodule ISO8583 do
     |> configure_formats()
   end
 
-  defp configure_formats(%{formats: nil} = opts) do
-    opts
-    |> Keyword.put(:formats, Formats.formats_definitions())
-  end
+  defp configure_formats(opts) do
+    case opts[:formats] |> is_map() do
+      false ->
+        opts
+        |> Keyword.put(:formats, Formats.formats_definitions())
 
-  defp configure_formats([formats: formats] = opts) when is_map(formats) do
-    formats_with_customs =
-      Formats.formats_definitions()
-      |> Map.merge(formats |> Utils.atomify_map())
+      true ->
+        formats_with_customs =
+          Formats.formats_definitions()
+          |> Map.merge(opts[:formats] |> Utils.atomify_map())
 
-    opts
-    |> Keyword.merge(%{formats: formats_with_customs})
+        opts
+        |> Keyword.merge(formats: formats_with_customs)
+    end
   end
 end

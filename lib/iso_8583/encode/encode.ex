@@ -6,22 +6,42 @@ defmodule ISO8583.Encode do
   alias ISO8583.Decode
 
   def encode_0_127(message, opts) do
-    message =
-      message
-      |> Map.put(:"1", Bitmap.fields_0_127(message))
-      |> Decode.expand_field("127.", opts)
-      |> Decode.expand_field("127.25.", opts)
-      |> encoding_extensions(:"127.25", opts)
-      |> encoding_extensions(:"127", opts)
+    with m <- extend_encode_etxtensions(message, opts),
+         {:ok, _, with_mti} <- encode_mti(message),
+         bitmap_hex <- Bitmap.fields_0_127(m),
+         {:ok, with_bitmap} <- encode_bitmap(bitmap_hex, with_mti, opts),
+         bitmap_list <- Utils.iterable_bitmap(bitmap_hex, 128),
+         with_data <- loop_bitmap(bitmap_list, m, with_bitmap, <<>>, 0, opts),
+         with_tcpe_header <- encode_tcp_header(with_data, opts) do
+      with_tcpe_header
+    else
+      error -> error
+    end
+  end
 
+  defp extend_encode_etxtensions(message, opts) do
     message
-    |> Bitmap.fields_0_127()
-    |> Utils.hex_to_binary()
-    |> Utils.pad_string("0", 64)
-    |> String.graphemes()
-    |> Enum.map(&String.to_integer/1)
-    |> loop_bitmap(message, message[:"0"], <<>>, 0, opts)
-    |> Utils.encode_tcp_header()
+    |> Map.put(:"1", Bitmap.fields_0_127(message))
+    |> Decode.expand_field("127.", opts)
+    |> Decode.expand_field("127.25.", opts)
+    |> encoding_extensions(:"127.25", opts)
+    |> encoding_extensions(:"127", opts)
+  end
+
+  defp encode_tcp_header(encoded, opts) do
+    case opts[:tcp_len_header] do
+      true -> Utils.encode_tcp_header(encoded)
+      false -> encoded
+    end
+  end
+
+  defp encode_mti(m) do
+    {:ok, m, m[:"0"]}
+  end
+
+  def encode_bitmap(bitmap_hex, encoded, opts) do
+    encoded = encoded |> Kernel.<>(bitmap_hex |> Utils.hex_to_bytes())
+    {:ok, encoded}
   end
 
   def encoding_extensions(%{"127.25.1": _} = message, :"127.25", opts) do

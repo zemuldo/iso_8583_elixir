@@ -1,6 +1,22 @@
 defmodule ISO8583.Utils do
   @moduledoc false
 
+  def encode_bitmap(bitmap, encoding) do
+    case encoding do
+      :hex -> bitmap |> hex_to_bytes()
+      _ -> bitmap
+    end
+  end
+
+  def iterable_bitmap(hex, length) do
+    hex
+    |> hex_to_binary()
+    |> pad_string("0", length)
+    |> String.graphemes()
+    |> Enum.map(&String.to_integer/1)
+    |> List.replace_at(0, 0)
+  end
+
   def binary_to_hex(string) do
     case Integer.parse(string, 2) do
       :error -> {:error, "Binary string is not valid"}
