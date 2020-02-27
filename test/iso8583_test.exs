@@ -47,5 +47,15 @@ defmodule ISO8583Test do
       assert message == decoded
       assert decoded == message
     end
+
+    test "decode 0800 message" do
+      message = fixture_message(:"0800")
+      {:ok, encoded} = message |> ISO8583.encode()
+      {:ok, decoded} = encoded |> ISO8583.decode()
+      assert MapSet.subset?(MapSet.new(message), MapSet.new(decoded))
+      assert MapSet.subset?(MapSet.new(decoded), MapSet.new(message))
+      assert message == decoded
+      assert decoded == message
+    end
   end
 end
