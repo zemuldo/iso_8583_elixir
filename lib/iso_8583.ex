@@ -283,13 +283,66 @@ defmodule ISO8583 do
       "70": "001"
       }
       iex>ISO8583.valid?(message)
-      {:ok, message}
+      true
       iex> message = <<0, 49, 48, 56, 48, 48, 130, 56, 0, 0, 0, 0,
       iex> 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 48, 56, 49, 56, 
       iex> 49, 54, 48, 50, 52, 52, 54, 52, 54, 52, 54, 53,
       iex> 49, 54, 48, 50, 52, 52, 48, 56, 49, 56, 48, 48, 
       iex> 49>>
       iex>ISO8583.valid?(message)
+      true
+  """
+  def valid?(message, opts \\ [])
+
+  def valid?(message, opts) when is_map(message) do
+    opts = opts |> default_opts()
+
+    with atomified <- Utils.atomify_map(message),
+         {:ok, _} <- DataTypes.valid?(atomified, opts) do
+      true
+    else
+      _ -> false
+    end
+  end
+
+  def valid?(message, opts) when is_binary(message) do
+    opts = opts |> default_opts()
+
+    with {:ok, decoded} <- decode(message),
+         {:ok, _} <- DataTypes.valid?(decoded, opts) do
+      true
+    else
+      error -> false
+    end
+  end
+
+  @doc """
+  Function check if json message is valid.
+  ## Examples
+      iex> message = %{
+      iex>   "0": "0800",
+      iex>   "7": "0818160244",
+      iex>   "11": "646465",
+      iex>   "12": "160244",
+      iex>   "13": "0818",
+      iex>   "70": "001"
+      iex> }
+      %{
+      "0": "0800",
+      "11": "646465",
+      "12": "160244",
+      "13": "0818",
+      "7": "0818160244",
+      "70": "001"
+      }
+      iex>ISO8583.valid(message)
+      {:ok, message}
+      iex> message = <<0, 49, 48, 56, 48, 48, 130, 56, 0, 0, 0, 0,
+      iex> 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 48, 56, 49, 56, 
+      iex> 49, 54, 48, 50, 52, 52, 54, 52, 54, 52, 54, 53,
+      iex> 49, 54, 48, 50, 52, 52, 48, 56, 49, 56, 48, 48, 
+      iex> 49>>
+      iex>ISO8583.valid(message)
       {:ok, %{
       "0": "0800",
       "11": "646465",
@@ -299,9 +352,9 @@ defmodule ISO8583 do
       "70": "001"
       }}
   """
-  def valid?(message, opts \\ [])
+  def valid(message, opts \\ [])
 
-  def valid?(message, opts) when is_map(message) do
+  def valid(message, opts) when is_map(message) do
     opts = opts |> default_opts()
 
     message
@@ -309,7 +362,7 @@ defmodule ISO8583 do
     |> DataTypes.valid?(opts)
   end
 
-  def valid?(message, opts) when is_binary(message) do
+  def valid(message, opts) when is_binary(message) do
     opts = opts |> default_opts()
 
     with {:ok, decoded} <- decode(message) do
