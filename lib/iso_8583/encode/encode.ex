@@ -13,7 +13,7 @@ defmodule ISO8583.Encode do
          bitmap_list <- Utils.iterable_bitmap(bitmap_hex, 128),
          with_data <- loop_bitmap(bitmap_list, m, with_bitmap, <<>>, 0, opts),
          with_tcpe_header <- encode_tcp_header(with_data, opts) do
-      with_tcpe_header
+      {:ok, with_tcpe_header}
     else
       error -> error
     end
@@ -40,8 +40,13 @@ defmodule ISO8583.Encode do
   end
 
   def encode_bitmap(bitmap_hex, encoded, opts) do
-    encoded = encoded |> Kernel.<>(bitmap_hex |> Utils.hex_to_bytes())
-    {:ok, encoded}
+    case opts[:bitmap_encoding] do
+      nil -> {:ok, encoded |> Kernel.<>(bitmap_hex |> Utils.hex_to_bytes())}
+      :hex -> {:ok, encoded |> Kernel.<>(bitmap_hex |> Utils.hex_to_bytes())}
+      :utf8 -> {:ok, encoded <> bitmap_hex}
+      :ascii -> {:ok, encoded <> bitmap_hex}
+      unknown -> {:error, "Unknown bitmpa encoding #{unknown}"}
+    end
   end
 
   def encoding_extensions(%{"127.25.1": _} = message, :"127.25", opts) do

@@ -5,27 +5,35 @@ defmodule ISO8583Test do
 
   describe "Encoding message" do
     test "Encode 0100 message to binary with TCP length header" do
-      encoded =
+      {:ok, encoded} =
         fixture_message(:"0100")
         |> ISO8583.encode()
 
       assert encoded |> byte_size() == 468
     end
 
-    # test "Encode 0100 message to binary with utf8 encoded bitmap" do
-    #   encoded =
-    #     fixture_message(:"0100")
-    #     |> ISO8583.encode(bitmap_encoding: :utf8)
+    test "Encode 0100 message to binary with utf8 encoded bitmap" do
+      {:ok, encoded} =
+        fixture_message(:"0100")
+        |> ISO8583.encode(bitmap_encoding: :utf8)
 
-    #   assert encoded |> byte_size() == 468
-    # end
+      assert encoded |> byte_size() == 484
+    end
 
-    # test "Encode 0100 message to binary without TCP length header" do
-    #   encoded =
-    #     fixture_message(:"0100")
-    #     |> ISO8583.encode(tcp_len_header: false)
+    test "Encode 0100 message to binary with ascii encoded bitmap" do
+      {:ok, encoded} =
+        fixture_message(:"0100")
+        |> ISO8583.encode(bitmap_encoding: :ascii)
 
-    #   assert encoded |> byte_size() == 466
-    # end
+      assert encoded |> byte_size() == 484
+    end
+
+    test "Encode 0100 message to binary without TCP length header" do
+      {:ok, encoded} =
+        fixture_message(:"0100")
+        |> ISO8583.encode(tcp_len_header: false)
+
+      assert encoded |> byte_size() == 466
+    end
   end
 end
