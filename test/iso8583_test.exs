@@ -57,5 +57,15 @@ defmodule ISO8583Test do
       assert message == decoded
       assert decoded == message
     end
+
+    test "decode 0800 message with no tcp length header" do
+      message = fixture_message(:"0800")
+      {:ok, encoded} = message |> ISO8583.encode(tcp_len_header: false)
+      {:ok, decoded} = encoded |> ISO8583.decode(tcp_len_header: false)
+      assert MapSet.subset?(MapSet.new(message), MapSet.new(decoded))
+      assert MapSet.subset?(MapSet.new(decoded), MapSet.new(message))
+      assert message == decoded
+      assert decoded == message
+    end
   end
 end

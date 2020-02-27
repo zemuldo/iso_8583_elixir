@@ -52,7 +52,7 @@ defmodule ISO8583.Decode do
         {:ok, tcp_len_header, message}
 
       false ->
-        message
+        {:ok, 0, message}
     end
   end
 
@@ -105,6 +105,7 @@ defmodule ISO8583.Decode do
     )
   end
 
+  defp extract_field_data(_, <<>>, _), do: {"", <<>>}
   defp extract_field_data(_, data, %{len_type: _} = format) do
     len_indicator_length = Utils.var_len_chars(format)
     length = String.slice(data, 0, len_indicator_length)

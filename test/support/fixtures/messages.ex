@@ -39,7 +39,7 @@ defmodule ISO8583.Test.Message do
           "13": "0818",
           "7": "0818160244",
           "70": "001"
-          }
+        }
       end
     end
   end
