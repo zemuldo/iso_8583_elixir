@@ -3,6 +3,7 @@ defmodule ISO8583Test do
   import ISO8583.Test.Fixtures
   doctest ISO8583
 
+  # Encoding message
   describe "Encoding message" do
     test "Encode 0100 message to binary with TCP length header" do
       {:ok, encoded} =
@@ -56,6 +57,7 @@ defmodule ISO8583Test do
     end
   end
 
+  # Decoding message
   describe "Decoding message" do
     test "decode 0100 message" do
       message = fixture_message(:"0100")
@@ -109,6 +111,7 @@ defmodule ISO8583Test do
     end
   end
 
+  # Validate message
   describe "Validate message" do
     test "Valid message" do
       assert fixture_message(:"0100") |> ISO8583.valid?()

@@ -99,15 +99,24 @@ defmodule ISO8583.Encode do
   defp encode_length_indicator(data, field, %{len_type: len_type} = format)
        when len_type == "fixed" do
     case byte_size(data) > format.max_len do
-      true -> {:error, "Invalid length of data on field #{field}, expected #{format.max_len}, but got #{byte_size(data)}"}
-      false -> data |> encode_data(format.content_type)
+      true ->
+        {:error,
+         "Invalid length of data on field #{field}, expected #{format.max_len}, but got #{
+           byte_size(data)
+         }"}
+
+      false ->
+        data |> encode_data(format.content_type)
     end
   end
 
   defp encode_length_indicator(data, field, format) do
     case byte_size(data) > format.max_len do
       true ->
-        {:error, "Invalid length of data on field #{field}, expected maximum of #{format.max_len}, but got #{byte_size(data)}"}
+        {:error,
+         "Invalid length of data on field #{field}, expected maximum of #{format.max_len}, but got #{
+           byte_size(data)
+         }"}
 
       false ->
         max_len_chars = format |> get_len_type |> byte_size()
