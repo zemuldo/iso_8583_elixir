@@ -4,6 +4,7 @@ defmodule ISO8583.Encode do
   alias ISO8583.Bitmap
   alias ISO8583.Utils
   alias ISO8583.Decode
+  alias ISO8583.Errors
 
   def encode_0_127(message, opts) do
     with m <- extend_encode_etxtensions(message, opts),
@@ -45,7 +46,7 @@ defmodule ISO8583.Encode do
       :hex -> {:ok, encoded |> Kernel.<>(bitmap_hex |> Utils.hex_to_bytes())}
       :utf8 -> {:ok, encoded <> bitmap_hex}
       :ascii -> {:ok, encoded <> bitmap_hex}
-      unknown -> {:error, "Unknown bitmpa encoding #{unknown}"}
+      unknown -> {:error, Errors.unknown_bitmap_encoding(unknown)}
     end
   end
 
