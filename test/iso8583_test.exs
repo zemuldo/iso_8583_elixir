@@ -1,6 +1,5 @@
 defmodule ISO8583Test do
   use ExUnit.Case
-  alias ISO8583.Errors
   import ISO8583.Test.Fixtures
   doctest ISO8583
 
@@ -29,20 +28,24 @@ defmodule ISO8583Test do
       assert encoded |> byte_size() == 484
     end
 
-    test "Encode 0100 message to binary with unknown bitmap" do
-      {:error, error} =
-        fixture_message(:"0100")
-        |> ISO8583.encode(bitmap_encoding: :asciii)
-
-      assert error == Errors.unknown_bitmap_encoding(:asciii)
-    end
-
     test "Encode 0100 message to binary without TCP length header" do
       {:ok, encoded} =
         fixture_message(:"0100")
         |> ISO8583.encode(tcp_len_header: false)
 
       assert encoded |> byte_size() == 466
+    end
+  end
+
+  describe "Decoding message" do
+    test "decode 0100 message" do
+      message = fixture_message(:"0100")
+      {:ok, encoded} = message |> ISO8583.encode()
+      {:ok, decoded} = encoded |> ISO8583.decode()
+      assert MapSet.subset?(MapSet.new(message), MapSet.new(decoded))
+      assert MapSet.subset?(MapSet.new(decoded), MapSet.new(message))
+      assert message == decoded
+      assert decoded == message
     end
   end
 end

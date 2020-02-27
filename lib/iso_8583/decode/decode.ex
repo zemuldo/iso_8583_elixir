@@ -7,7 +7,7 @@ defmodule ISO8583.Decode do
          {:ok, mti, chunk2} <- extract_mti(chunk1),
          {:ok, bitmap, chunk3} <- extract_bitmap(chunk2, opts),
          data <- extract_children(bitmap, chunk3, "", %{}, 0, opts) do
-      data |> Map.merge(%{"0": mti})
+      {:ok, data |> Map.merge(%{"0": mti})}
     else
       error -> error
     end
@@ -46,7 +46,7 @@ defmodule ISO8583.Decode do
     case opts[:tcp_len_header] do
       true ->
         tcp_len_header =
-          message |> binary_part(0, 2) |> Utils.bytes_to_hex() |> String.to_integer()
+          message |> binary_part(0, 2) |> Utils.bytes_to_hex() |> Utils.extract_tcp_header()
 
         message = message |> String.slice(2..-1)
         {:ok, tcp_len_header, message}
@@ -98,7 +98,11 @@ defmodule ISO8583.Decode do
 
   defp extract_field_data(_, data, %{len_type: len_type} = format)
        when len_type == "fixed" do
-    {data |> String.slice(0, format.max_len), data |> String.slice(format.max_len..-1)}
+    Utils.extract_hex_data(
+      data,
+      format.max_len,
+      format.content_type
+    )
   end
 
   defp extract_field_data(_, data, %{len_type: _} = format) do
@@ -106,7 +110,12 @@ defmodule ISO8583.Decode do
     length = String.slice(data, 0, len_indicator_length)
     field_data_len = String.to_integer(length)
     data = String.slice(data, len_indicator_length..-1)
-    {String.slice(data, 0, field_data_len), String.slice(data, field_data_len..-1)}
+
+    Utils.extract_hex_data(
+      data,
+      field_data_len,
+      format.content_type
+    )
   end
 
   defp bitmap_list(hex_string, length) do

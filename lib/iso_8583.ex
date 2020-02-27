@@ -168,14 +168,14 @@ defmodule ISO8583 do
       iex> 49, 54, 48, 50, 52, 52, 48, 56, 49, 56, 48, 48, 
       iex> 49>>
       iex>ISO8583.decode(message)
-      %{
+      {:ok, %{
       "0": "0800",
       "11": "646465",
       "12": "160244",
       "13": "0818",
       "7": "0818160244",
       "70": "001"
-      }
+      }}
   """
 
   def decode(message, opts \\ []) do
@@ -312,9 +312,11 @@ defmodule ISO8583 do
   def valid?(message, opts) when is_binary(message) do
     opts = opts |> default_opts()
 
-    message
-    |> decode()
-    |> DataTypes.valid?(opts)
+    with {:ok, decoded} <- decode(message) do
+      decoded |> DataTypes.valid?(opts)
+    else
+      error -> error
+    end
   end
 
   defp default_opts([]) do
