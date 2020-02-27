@@ -83,6 +83,7 @@ defmodule ISO8583.Encode do
         field = Utils.construct_field(counter + 1, field_pad)
         data = message[field]
         new_encoded = encoded <> encode_field(field, data, opts)
+
         loop_bitmap(rest_bitmaps, message, new_encoded, field_pad, counter + 1, opts)
 
       0 ->
@@ -95,18 +96,27 @@ defmodule ISO8583.Encode do
     encode_length_indicator(data, field, format)
   end
 
-  defp encode_length_indicator(data, _, %{len_type: len_type} = format)
+  defp encode_length_indicator(data, field, %{len_type: len_type} = format)
        when len_type == "fixed" do
-    data |> encode_data(format.content_type)
+    case byte_size(data) > format.max_len do
+      true -> {:error, "Invalid length of data on field #{field}, expected #{format.max_len}, but got #{byte_size(data)}"}
+      false -> data |> encode_data(format.content_type)
+    end
   end
 
-  defp encode_length_indicator(data, _, format) do
-    max_len_chars = format |> get_len_type |> byte_size()
+  defp encode_length_indicator(data, field, format) do
+    case byte_size(data) > format.max_len do
+      true ->
+        {:error, "Invalid length of data on field #{field}, expected maximum of #{format.max_len}, but got #{byte_size(data)}"}
 
-    byte_size(data)
-    |> Integer.to_string()
-    |> Utils.padd_chars(max_len_chars, "0")
-    |> Kernel.<>(data |> encode_data(format.content_type))
+      false ->
+        max_len_chars = format |> get_len_type |> byte_size()
+
+        byte_size(data)
+        |> Integer.to_string()
+        |> Utils.padd_chars(max_len_chars, "0")
+        |> Kernel.<>(data |> encode_data(format.content_type))
+    end
   end
 
   defp encode_data(data, content_type) do

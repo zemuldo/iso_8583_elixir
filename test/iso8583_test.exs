@@ -35,6 +35,25 @@ defmodule ISO8583Test do
 
       assert encoded |> byte_size() == 466
     end
+
+    test "Encode 0100 message to binary custom formats" do
+      custome_format = %{
+        "2": %{
+          content_type: "n",
+          label: "Primary account number (PAN)",
+          len_type: "llvar",
+          max_len: 30,
+          min_len: 1
+        }
+      }
+
+      {:ok, encoded} =
+        fixture_message(:"0100")
+        |> Map.put(:"2", "444466668888888888888888")
+        |> ISO8583.encode(formats: custome_format)
+
+      assert encoded |> byte_size() == 476
+    end
   end
 
   describe "Decoding message" do
@@ -67,6 +86,27 @@ defmodule ISO8583Test do
       assert message == decoded
       assert decoded == message
     end
+
+    test "decode 0100 message to binary custom formats" do
+      custome_format = %{
+        "2": %{
+          content_type: "n",
+          label: "Primary account number (PAN)",
+          len_type: "llvar",
+          max_len: 30,
+          min_len: 1
+        }
+      }
+
+      message = fixture_message(:"0100") |> Map.put(:"2", "444466668888888888888888")
+      {:ok, encoded} = message |> ISO8583.encode(formats: custome_format)
+      {:ok, decoded} = encoded |> ISO8583.decode(formats: custome_format)
+
+      assert MapSet.subset?(MapSet.new(message), MapSet.new(decoded))
+      assert MapSet.subset?(MapSet.new(decoded), MapSet.new(message))
+      assert message == decoded
+      assert decoded == message
+    end
   end
 
   describe "Validate message" do
@@ -75,7 +115,9 @@ defmodule ISO8583Test do
     end
 
     test "Invalid message, invalid length of data, boolean" do
-      refute fixture_message(:"0100") |> Map.put(:"2", "444466668888888888888888") |> ISO8583.valid?()
+      refute fixture_message(:"0100")
+             |> Map.put(:"2", "444466668888888888888888")
+             |> ISO8583.valid?()
     end
 
     test "Invalid message, wrong type of data, boolean" do
@@ -83,8 +125,11 @@ defmodule ISO8583Test do
     end
 
     test "Invalid message, invalid length of data, error" do
-      error = fixture_message(:"0100") |> Map.put(:"2", "444466668888888888888888") |> ISO8583.valid()
-      assert error == {:error, "Invalid length of data on field 2, expected maximum of 19 , found 24"}
+      error =
+        fixture_message(:"0100") |> Map.put(:"2", "444466668888888888888888") |> ISO8583.valid()
+
+      assert error ==
+               {:error, "Invalid length of data on field 2, expected maximum of 19 , found 24"}
     end
 
     test "Invalid message, wrong type of data, error" do
@@ -98,7 +143,7 @@ defmodule ISO8583Test do
     end
 
     test "Invalid encoded message, invalid length of data, boolean" do
-      _custome_format = %{
+      custome_format = %{
         "2": %{
           content_type: "n",
           label: "Primary account number (PAN)",
@@ -107,12 +152,17 @@ defmodule ISO8583Test do
           min_len: 1
         }
       }
-      {:ok, message} = fixture_message(:"0100") |> Map.put(:"2", "444466668888888888888888") |> ISO8583.encode()
+
+      {:ok, message} =
+        fixture_message(:"0100")
+        |> Map.put(:"2", "444466668888888888888888")
+        |> ISO8583.encode(formats: custome_format)
+
       refute message |> ISO8583.valid?()
     end
 
     test "Invalid encoded message, invalid length of data, error" do
-      _custome_format = %{
+      custome_format = %{
         "2": %{
           content_type: "n",
           label: "Primary account number (PAN)",
@@ -121,8 +171,14 @@ defmodule ISO8583Test do
           min_len: 1
         }
       }
-      {:ok, message} = fixture_message(:"0100") |> Map.put(:"2", "444466668888888888888888") |> ISO8583.encode()
-      assert  message |> ISO8583.valid() == {:error, "Invalid length of data on field 2, expected maximum of 19 , found 24"}
+
+      {:ok, message} =
+        fixture_message(:"0100")
+        |> Map.put(:"2", "444466668888888888888888")
+        |> ISO8583.encode(formats: custome_format)
+
+      assert message |> ISO8583.valid() ==
+               {:error, "Invalid length of data on field 2, expected maximum of 19 , found 24"}
     end
   end
 end
