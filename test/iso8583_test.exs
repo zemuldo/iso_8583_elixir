@@ -55,6 +55,15 @@ defmodule ISO8583Test do
 
       assert encoded |> byte_size() == 476
     end
+
+    test "Encode 0100 message to binary invalid data" do
+      {:error, message} =
+        fixture_message(:"0100")
+        |> Map.put(:"2", "444466668888888888888888")
+        |> ISO8583.encode()
+
+      assert message == "Invalid length of data on field 2, expected maximum of 19, but got 24"
+    end
   end
 
   # Decoding message

@@ -11,7 +11,7 @@ defmodule ISO8583.Encode do
          bitmap_hex <- Bitmap.fields_0_127(m),
          {:ok, with_bitmap} <- encode_bitmap(bitmap_hex, with_mti, opts),
          bitmap_list <- Utils.iterable_bitmap(bitmap_hex, 128),
-         with_data <- loop_bitmap(bitmap_list, m, with_bitmap, <<>>, 0, opts),
+         {:ok, with_data} <- loop_bitmap(bitmap_list, m, with_bitmap, <<>>, 0, opts),
          with_tcpe_header <- encode_tcp_header(with_data, opts) do
       {:ok, with_tcpe_header}
     else
@@ -20,12 +20,18 @@ defmodule ISO8583.Encode do
   end
 
   defp extend_encode_etxtensions(message, opts) do
-    message
-    |> Map.put(:"1", Bitmap.fields_0_127(message))
-    |> Decode.expand_field("127.", opts)
-    |> Decode.expand_field("127.25.", opts)
-    |> encoding_extensions(:"127.25", opts)
-    |> encoding_extensions(:"127", opts)
+    message =
+      message
+      |> Map.put(:"1", Bitmap.fields_0_127(message))
+      |> Decode.expand_field("127.", opts)
+      |> Decode.expand_field("127.25.", opts)
+
+    with {:ok, m1} <- encoding_extensions(message, :"127.25", opts),
+         {:ok, m2} <- encoding_extensions(m1, :"127", opts) do
+      {:ok, Map.merge(message, %{"127.25": m2})}
+    else
+      error -> error
+    end
   end
 
   defp encode_tcp_header(encoded, opts) do
@@ -47,33 +53,40 @@ defmodule ISO8583.Encode do
   end
 
   def encoding_extensions(%{"127.25.1": _} = message, :"127.25", opts) do
-    data =
+    bitmap =
       message[:"127.25.1"]
       |> Utils.hex_to_binary()
       |> Utils.pad_string("0", 64)
       |> String.graphemes()
       |> Enum.map(&String.to_integer/1)
-      |> loop_bitmap(message, message[:"127.25.1"], "127.25.", 0, opts)
-      |> encode_length_indicator("127.25", opts[:formats][:"127.25"])
 
-    Map.merge(message, %{"127.25": data})
+    with {:ok, encoded} <- loop_bitmap(bitmap, message, message[:"127.25.1"], "127.25.", 0, opts),
+         {:ok, with_length} <-
+           encode_length_indicator(encoded, "127.25", opts[:formats][:"127.25"]) do
+      {:ok, Map.merge(message, %{"127.25": with_length})}
+    else
+      error -> error
+    end
   end
 
   def encoding_extensions(%{"127.1": _} = message, :"127", opts) do
-    data =
+    bitmap =
       message[:"127.1"]
       |> Utils.hex_to_binary()
       |> Utils.pad_string("0", 64)
       |> String.graphemes()
       |> Enum.map(fn n -> String.to_integer(n) end)
-      |> loop_bitmap(message, message[:"127.1"], "127.", 0, opts)
 
-    Map.merge(message, %{"127": data})
+    with {:ok, encoded} <- loop_bitmap(bitmap, message, message[:"127.1"], "127.", 0, opts) do
+      {:ok, Map.merge(message, %{"127": encoded})}
+    else
+      error -> error
+    end
   end
 
   def encoding_extensions(message, _, _), do: message
 
-  defp loop_bitmap([], _, encoded, _, _, _), do: encoded
+  defp loop_bitmap([], _, encoded, _, _, _), do: {:ok, encoded}
 
   defp loop_bitmap(bitmap, message, encoded, field_pad, counter, opts) do
     [current | rest_bitmaps] = bitmap
@@ -82,9 +95,21 @@ defmodule ISO8583.Encode do
       1 ->
         field = Utils.construct_field(counter + 1, field_pad)
         data = message[field]
-        new_encoded = encoded <> encode_field(field, data, opts)
 
-        loop_bitmap(rest_bitmaps, message, new_encoded, field_pad, counter + 1, opts)
+        case encode_field(field, data, opts) do
+          {:error, message} ->
+            {:error, message}
+
+          {:ok, data_encoded} ->
+            loop_bitmap(
+              rest_bitmaps,
+              message,
+              encoded <> data_encoded,
+              field_pad,
+              counter + 1,
+              opts
+            )
+        end
 
       0 ->
         loop_bitmap(rest_bitmaps, message, encoded, field_pad, counter + 1, opts)
@@ -106,7 +131,7 @@ defmodule ISO8583.Encode do
          }"}
 
       false ->
-        data |> encode_data(format.content_type)
+        {:ok, data |> encode_data(format.content_type)}
     end
   end
 
@@ -121,10 +146,11 @@ defmodule ISO8583.Encode do
       false ->
         max_len_chars = format |> get_len_type |> byte_size()
 
-        byte_size(data)
-        |> Integer.to_string()
-        |> Utils.padd_chars(max_len_chars, "0")
-        |> Kernel.<>(data |> encode_data(format.content_type))
+        {:ok,
+         byte_size(data)
+         |> Integer.to_string()
+         |> Utils.padd_chars(max_len_chars, "0")
+         |> Kernel.<>(data |> encode_data(format.content_type))}
     end
   end
 
