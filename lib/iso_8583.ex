@@ -110,6 +110,7 @@ defmodule ISO8583 do
 
   @spec encode(message :: map(), opts :: Keyword.t()) :: {:ok, binary()} | {:error, String.t()}
   def encode(message, opts \\ [])
+
   def encode(message, opts) do
     opts = opts |> default_opts()
 

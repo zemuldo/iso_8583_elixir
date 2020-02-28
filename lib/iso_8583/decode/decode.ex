@@ -72,7 +72,7 @@ defmodule ISO8583.Decode do
 
   def expand_binary(data, field_pad, opts) do
     with bitmap <- Utils.iterable_bitmap(String.slice(data, 0, 16), 64),
-    {:ok, expanded} <-
+         {:ok, expanded} <-
            extract_children(bitmap, data |> String.slice(16..-1), field_pad, %{}, 0, opts) do
       {:ok, expanded}
     else
