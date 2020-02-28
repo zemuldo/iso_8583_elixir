@@ -55,10 +55,7 @@ defmodule ISO8583.Encode do
   def encoding_extensions(%{"127.25.1": _} = message, :"127.25", opts) do
     bitmap =
       message[:"127.25.1"]
-      |> Utils.hex_to_binary()
-      |> Utils.pad_string("0", 64)
-      |> String.graphemes()
-      |> Enum.map(&String.to_integer/1)
+      |> Utils.iterable_bitmap(64)
 
     with {:ok, encoded} <- loop_bitmap(bitmap, message, message[:"127.25.1"], "127.25.", 0, opts),
          {:ok, with_length} <-
@@ -72,10 +69,7 @@ defmodule ISO8583.Encode do
   def encoding_extensions(%{"127.1": _} = message, :"127", opts) do
     bitmap =
       message[:"127.1"]
-      |> Utils.hex_to_binary()
-      |> Utils.pad_string("0", 64)
-      |> String.graphemes()
-      |> Enum.map(fn n -> String.to_integer(n) end)
+      |> Utils.iterable_bitmap(64)
 
     with {:ok, encoded} <- loop_bitmap(bitmap, message, message[:"127.1"], "127.", 0, opts) do
       {:ok, Map.merge(message, %{"127": encoded})}
