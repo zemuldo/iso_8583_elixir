@@ -23,59 +23,60 @@ defmodule ISO8583 do
     ```
   ## Customization and configuration
 
-  All exposed API functions take options with the following configurable options.
-  
-  ### TCP Length Indicator
-  This is used to specify whether or not to include the 2 byte hexadecimal encoded byte length of the whole message
-  whe encoding or to consider it when decoding.
-  This value is set to true by default.
-  Example:
-  ```elixir
-  ISO8583.encode(message, tcp_len_header: false)
-  ```
+    All exposed API functions take options with the following configurable options.
+    
+    ### TCP Length Indicator
+    This is used to specify whether or not to include the 2 byte hexadecimal encoded byte length of the whole message
+    whe encoding or to consider it when decoding.
+    This value is set to true by default.
+    Example:
+    ```elixir
+    ISO8583.encode(message, tcp_len_header: false)
+    ```
 
-  ### Bitmap encoding
-  Primary and SecondaryBitmap encoding bitmap for fields 0-127 is configurable like below.
+    ### Bitmap encoding
+    Primary and SecondaryBitmap encoding bitmap for fields 0-127 is configurable like below.
 
-  Examples:
+    Examples:
 
-  ```elixir
-  ISO8583.encode(bitmap_encoding: :ascii) # will result in 32 byte length bitmap
-  ```
+    ```elixir
+    ISO8583.encode(bitmap_encoding: :ascii) # will result in 32 byte length bitmap
+    ```
 
-  ```elixir
-  ISO8583.encode() # will default to :hex result in 16 byte length bitmap
-  ```
+    ```elixir
+    ISO8583.encode() # will default to :hex result in 16 byte length bitmap
+    ```
 
-  ### Custom formats
+    ### Custom formats
 
-  Custome formats for data type, data length and length type for all fields including special bitmaps like 
-  for 127.1 and 127.25.1 are confugurable through custom formats. The default formats will be replaced by the custom one.
+    Custom formats for data type, data length and length type for all fields including special bitmaps like 
+    for 127.1 and 127.25.1 are configurable through custom formats. The default formats will be replaced by the custom one.
 
-  To see the default fomats [check here](https://github.com/zemuldo/iso_8583_elixir/blob/master/lib/iso_8583/formats/definitions.ex)
+    To see the default formats [check here](https://github.com/zemuldo/iso_8583_elixir/blob/master/lib/iso_8583/formats/definitions.ex)
 
-  Example:
+    Example:
 
-  Here we overide field 2 to have maximum of 30 charaters.
-  ```elixir
-  custome_format = %{
-        "2": %{
-          content_type: "n",
-          label: "Primary account number (PAN)",
-          len_type: "llvar",
-          max_len: 30,
-          min_len: 1
+    Here we override field 2 to have maximum of 30 characters.
+
+    ```elixir
+    custome_format = %{
+          "2": %{
+            content_type: "n",
+            label: "Primary account number (PAN)",
+            len_type: "llvar",
+            max_len: 30,
+            min_len: 1
+          }
         }
-      }
 
-      {:ok, message} =
-        fixture_message(:"0100")
-        |> Map.put(:"2", "444466668888888888888888")
-        |> ISO8583.encode(formats: custome_format)
+        {:ok, message} =
+          fixture_message(:"0100")
+          |> Map.put(:"2", "444466668888888888888888")
+          |> ISO8583.encode(formats: custome_format)
 
-      refute message |> ISO8583.valid?()
-    end
-  ```
+        refute message |> ISO8583.valid?()
+      end
+    ```
   """
 
   import ISO8583.Encode
