@@ -1,7 +1,7 @@
 defmodule ISO8583 do
   @moduledoc ~S"""
   ISO 8583 messaging library for Elixir. This library has utilities validate, encode and decode message 
-  between systems using ISO 8583 regadless of the language the other system is written in. 
+  between systems using ISO 8583 regadless of the language the other system is written in.
   """
 
   import ISO8583.Encode
@@ -38,6 +38,7 @@ defmodule ISO8583 do
       49>>}
   """
 
+  @spec encode(message :: map(), opts :: Keyword.t()) :: {:ok, binary()} | {:error, String.t()}
   def encode(message, opts \\ []) do
     opts = opts |> default_opts()
 
@@ -65,6 +66,8 @@ defmodule ISO8583 do
         "127.25": "7E1E5F7C0000000000000000500000000000000014A00000000310105C000128FF0061F379D43D5AEEBC8002800000000000000001E0302031F000203001406010A03A09000008CE0D0C840421028004880040417091180000014760BAC24959"
       }}
   """
+
+  @spec encode_127(message :: map(), opts :: Keyword.t()) :: {:ok, binary()} | {:error, String.t()}
   def encode_127(message, opts \\ []) do
     opts = opts |> default_opts()
 
@@ -151,6 +154,8 @@ defmodule ISO8583 do
         "127.25.7": "FF00"
       }}
   """
+
+  @spec encode_127_25(message :: map(), opts :: Keyword.t()) :: {:ok, binary()} | {:error, String.t()}
   def encode_127_25(message, opts \\ []) do
     opts = opts |> default_opts()
 
@@ -178,6 +183,7 @@ defmodule ISO8583 do
       }}
   """
 
+  @spec decode(message :: binary(), opts :: Keyword.t()) :: {:ok, map()} | {:error, String.t()}
   def decode(message, opts \\ []) do
     opts = opts |> default_opts()
 
@@ -196,18 +202,20 @@ defmodule ISO8583 do
           "127": "000000800000000001927E1E5F7C0000000000000000500000000000000014A00000000310105C000128FF0061F379D43D5AEEBC8002800000000000000001E0302031F000203001406010A03A09000008CE0D0C840421028004880040417091180000014760BAC24959"
       }
       iex>ISO8583.decode_127(message)
-      %{
+      {:ok, %{
           "127": "000000800000000001927E1E5F7C0000000000000000500000000000000014A00000000310105C000128FF0061F379D43D5AEEBC8002800000000000000001E0302031F000203001406010A03A09000008CE0D0C840421028004880040417091180000014760BAC24959",
           "127.25": "7E1E5F7C0000000000000000500000000000000014A00000000310105C000128FF0061F379D43D5AEEBC8002800000000000000001E0302031F000203001406010A03A09000008CE0D0C840421028004880040417091180000014760BAC24959"
-       }
+       }}
   """
+
+  @spec decode_127(message :: binary(), opts :: Keyword.t()) :: {:ok, map()} | {:error, String.t()}
   def decode_127(message, opts \\ [])
 
   def decode_127(message, opts) when is_binary(message) do
     opts = opts |> default_opts()
 
     message
-    |> expand_binary("127.", opts)
+    |> expand_field("127.", opts)
   end
 
   def decode_127(message, opts) do
@@ -230,7 +238,7 @@ defmodule ISO8583 do
           "127.25": "7E1E5F7C0000000000000000500000000000000014A00000000310105C000128FF0061F379D43D5AEEBC8002800000000000000001E0302031F000203001406010A03A09000008CE0D0C840421028004880040417091180000014760BAC24959"
       }
       iex>ISO8583.decode_127_25(message)
-      %{
+      {:ok, %{
         "127": "000000800000000001927E1E5F7C0000000000000000500000000000000014A00000000310105C000128FF0061F379D43D5AEEBC8002800000000000000001E0302031F000203001406010A03A09000008CE0D0C840421028004880040417091180000014760BAC24959",
         "127.25": "7E1E5F7C0000000000000000500000000000000014A00000000310105C000128FF0061F379D43D5AEEBC8002800000000000000001E0302031F000203001406010A03A09000008CE0D0C840421028004880040417091180000014760BAC24959",
         "127.25.12": "61F379D43D5AEEBC",
@@ -254,8 +262,10 @@ defmodule ISO8583 do
         "127.25.5": "5C00",
         "127.25.6": "0128",
         "127.25.7": "FF00"
-      }
+      }}
   """
+
+  @spec decode_127_25(message :: binary(), opts :: Keyword.t()) :: {:ok, map()} | {:error, String.t()}
   def decode_127_25(message, opts \\ []) do
     opts = opts |> default_opts()
 
@@ -292,6 +302,8 @@ defmodule ISO8583 do
       iex>ISO8583.valid?(message)
       true
   """
+
+  @spec valid?(message :: binary() | map(), opts :: Keyword.t()) :: true | false
   def valid?(message, opts \\ [])
 
   def valid?(message, opts) when is_map(message) do
@@ -312,7 +324,7 @@ defmodule ISO8583 do
          {:ok, _} <- DataTypes.valid?(decoded, opts) do
       true
     else
-      error -> false
+      _ -> false
     end
   end
 
@@ -352,6 +364,7 @@ defmodule ISO8583 do
       "70": "001"
       }}
   """
+  @spec valid(message :: map() | binary(), opts :: Keyword.t()) :: {:ok, map()} | {:error, String.t()}
   def valid(message, opts \\ [])
 
   def valid(message, opts) when is_map(message) do

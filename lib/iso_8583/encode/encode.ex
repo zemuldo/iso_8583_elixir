@@ -23,10 +23,10 @@ defmodule ISO8583.Encode do
     message =
       message
       |> Map.put(:"1", Bitmap.fields_0_127(message))
-      |> Decode.expand_field("127.", opts)
-      |> Decode.expand_field("127.25.", opts)
 
-    with {:ok, m1} <- encoding_extensions(message, :"127.25", opts),
+    with {:ok, expanded_127} <- Decode.expand_field(message, "127.", opts),
+          {:ok, expanded_127_25} <- Decode.expand_field(expanded_127, "127.25.", opts),
+         {:ok, m1} <- encoding_extensions(expanded_127_25, :"127.25", opts),
          {:ok, m2} <- encoding_extensions(m1, :"127", opts) do
       {:ok, Map.merge(message, %{"127.25": m2})}
     else

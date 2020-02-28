@@ -6,8 +6,8 @@ defmodule ISO8583.Decode do
     with {:ok, _, chunk1} <- extract_tcp_len_header(message, opts),
          {:ok, mti, chunk2} <- extract_mti(chunk1),
          {:ok, bitmap, chunk3} <- extract_bitmap(chunk2, opts),
-         data <- extract_children(bitmap, chunk3, "", %{}, 0, opts) do
-      {:ok, data |> Map.merge(%{"0": mti})}
+         {:ok, decoded} <- extract_children(bitmap, chunk3, "", %{}, 0, opts) do
+      {:ok, decoded |> Map.merge(%{"0": mti})}
     else
       error -> error
     end
@@ -20,8 +20,7 @@ defmodule ISO8583.Decode do
           message
           |> :binary.part(0, 16)
           |> Utils.bytes_to_hex()
-          |> bitmap_list(128)
-          |> List.replace_at(0, "0")
+          |> Utils.iterable_bitmap(128)
 
         {:ok, bitmap, message |> String.slice(16..-1)}
 
@@ -29,8 +28,7 @@ defmodule ISO8583.Decode do
         bitmap =
           message
           |> String.slice(0..32)
-          |> bitmap_list(128)
-          |> List.replace_at(0, "0")
+          |> Utils.iterable_bitmap(128)
 
         {:ok, bitmap, message |> String.slice(32..-1)}
     end
@@ -57,39 +55,50 @@ defmodule ISO8583.Decode do
   end
 
   def expand_field(%{"127": data} = message, "127.", opts) do
-    message
-    |> Map.merge(expand_binary(data, "127.", opts))
+    with {:ok, expanded} <- expand_binary(data, "127.", opts) do
+      {:ok, Map.merge(message, expanded)}
+    else
+      error -> error
+    end
   end
 
   def expand_field(%{"127.25": data} = message, "127.25.", opts) do
-    message
-    |> Map.merge(expand_binary(data, "127.25.", opts))
+    with {:ok, expanded} <- expand_binary(data, "127.25.", opts) do
+      {:ok, Map.merge(message, expanded)}
+    else
+      error -> error
+    end
   end
 
-  def expand_field(message, _, _), do: message
+  def expand_field(message, _, _), do: {:ok, message}
 
   def expand_binary(data, field_pad, opts) do
-    data
-    |> String.slice(0, 16)
-    |> Utils.hex_to_binary()
-    |> Utils.pad_string("0", 64)
-    |> String.graphemes()
-    |> extract_children(data |> String.slice(16..-1), field_pad, %{}, 0, opts)
+    bitmap =
+      data
+      |> String.slice(0, 16)
+      |> Utils.iterable_bitmap(64)
+
+    with {:ok, expanded} <-
+           extract_children(bitmap, data |> String.slice(16..-1), field_pad, %{}, 0, opts) do
+      {:ok, expanded}
+    else
+      error -> error
+    end
   end
 
-  defp extract_children([], _, _, extracted, _, _), do: extracted
+  defp extract_children([], _, _, extracted, _, _), do: {:ok, extracted}
 
   defp extract_children(bitmap, data, pad, extracted, counter, opts) do
     [current | rest] = bitmap
     field = Utils.construct_field(counter + 1, pad)
 
     case current do
-      "1" ->
+      1 ->
         {field_data, left} = extract_field_data(field, data, opts[:formats][field])
         extracted = extracted |> Map.put(field, field_data)
         extract_children(rest, left, pad, extracted, counter + 1, opts)
 
-      "0" ->
+      0 ->
         extract_children(rest, data, pad, extracted, counter + 1, opts)
     end
   end
@@ -118,12 +127,5 @@ defmodule ISO8583.Decode do
       field_data_len,
       format.content_type
     )
-  end
-
-  defp bitmap_list(hex_string, length) do
-    hex_string
-    |> Utils.hex_to_binary()
-    |> Utils.pad_string("0", length)
-    |> String.graphemes()
   end
 end
