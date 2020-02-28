@@ -1,4 +1,5 @@
 defmodule ISO8583.Test.Message do
+  @moduledoc false
   defmacro __using__(_) do
     quote do
       def fixture_message(:"0100") do

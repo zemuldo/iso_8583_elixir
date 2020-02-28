@@ -55,17 +55,15 @@ defmodule ISO8583.Decode do
   end
 
   def expand_field(%{"127": data} = message, "127.", opts) do
-    with {:ok, expanded} <- expand_binary(data, "127.", opts) do
-      {:ok, Map.merge(message, expanded)}
-    else
+    case expand_binary(data, "127.", opts) do
+      {:ok, expanded} -> {:ok, Map.merge(message, expanded)}
       error -> error
     end
   end
 
   def expand_field(%{"127.25": data} = message, "127.25.", opts) do
-    with {:ok, expanded} <- expand_binary(data, "127.25.", opts) do
-      {:ok, Map.merge(message, expanded)}
-    else
+    case expand_binary(data, "127.25.", opts) do
+      {:ok, expanded} -> {:ok, Map.merge(message, expanded)}
       error -> error
     end
   end
@@ -73,12 +71,8 @@ defmodule ISO8583.Decode do
   def expand_field(message, _, _), do: {:ok, message}
 
   def expand_binary(data, field_pad, opts) do
-    bitmap =
-      data
-      |> String.slice(0, 16)
-      |> Utils.iterable_bitmap(64)
-
-    with {:ok, expanded} <-
+    with bitmap <- Utils.iterable_bitmap(String.slice(data, 0, 16), 64),
+    {:ok, expanded} <-
            extract_children(bitmap, data |> String.slice(16..-1), field_pad, %{}, 0, opts) do
       {:ok, expanded}
     else

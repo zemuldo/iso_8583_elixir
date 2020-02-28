@@ -2,8 +2,8 @@ defmodule ISO8583.Encode do
   @moduledoc false
 
   alias ISO8583.Bitmap
-  alias ISO8583.Utils
   alias ISO8583.Decode
+  alias ISO8583.Utils
 
   def encode_0_127(message, opts) do
     with m <- extend_encode_etxtensions(message, opts),
@@ -66,12 +66,9 @@ defmodule ISO8583.Encode do
     end
   end
 
-  def encoding_extensions(%{"127.1": _} = message, :"127", opts) do
-    bitmap =
-      message[:"127.1"]
-      |> Utils.iterable_bitmap(64)
-
-    with {:ok, encoded} <- loop_bitmap(bitmap, message, message[:"127.1"], "127.", 0, opts) do
+  def encoding_extensions(%{"127.1": data} = message, :"127", opts) do
+    with bitmap <- Utils.iterable_bitmap(data, 64),
+         {:ok, encoded} <- loop_bitmap(bitmap, message, message[:"127.1"], "127.", 0, opts) do
       {:ok, Map.merge(message, %{"127": encoded})}
     else
       error -> error

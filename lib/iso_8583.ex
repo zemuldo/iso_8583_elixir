@@ -75,9 +75,9 @@ defmodule ISO8583 do
   """
 
   import ISO8583.Encode
+  alias ISO8583.DataTypes
   import ISO8583.Decode
   alias ISO8583.Formats
-  alias ISO8583.DataTypes
   alias ISO8583.Utils
 
   @doc """
@@ -454,9 +454,8 @@ defmodule ISO8583 do
   def valid(message, opts) when is_binary(message) do
     opts = opts |> default_opts()
 
-    with {:ok, decoded} <- decode(message) do
-      decoded |> DataTypes.valid?(opts)
-    else
+    case decode(message) do
+      {:ok, decoded} -> decoded |> DataTypes.valid?(opts)
       error -> error
     end
   end
