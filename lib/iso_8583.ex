@@ -6,8 +6,7 @@ defmodule ISO8583 do
     ```elixir
       message = %{ "0": "0800",  "11": "646465", "12": "160244", "13": "0818", "7": "0818160244","70": "001"}
       {:ok, encoded} = ISO8583.encode(message)
-      {:ok,
-      <<0, 49, 48, 56, 48, 48, 130, 56, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 48, 49, 56, 49, 54, ...>>}
+      {:ok, <<0, 49, 48, 56, 48, 48, 130, 56, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 48, 49, 56, 49, 54, ...>>}
       {:ok, decoded} = ISO8583.decode(encoded)
       {:ok, %{ "0": "0800",  "11": "646465", "12": "160244", "13": "0818", "7": "0818160244","70": "001"}}
     ```
@@ -31,7 +30,7 @@ defmodule ISO8583 do
     This value is set to true by default.
     Example:
     ```elixir
-    ISO8583.encode(message, tcp_len_header: false)
+    ISO8583.encode(some_message, tcp_len_header: false)
     ```
 
     ### Bitmap encoding
@@ -40,11 +39,11 @@ defmodule ISO8583 do
     Examples:
 
     ```elixir
-    ISO8583.encode(bitmap_encoding: :ascii) # will result in 32 byte length bitmap
+    ISO8583.encode(some_message, bitmap_encoding: :ascii) # will result in 32 byte length bitmap
     ```
 
     ```elixir
-    ISO8583.encode() # will default to :hex result in 16 byte length bitmap
+    ISO8583.encode(some_message) # will default to :hex result in 16 byte length bitmap
     ```
 
     ### Custom formats
@@ -59,7 +58,7 @@ defmodule ISO8583 do
     Here we override field 2 to have maximum of 30 characters.
 
     ```elixir
-    custome_format = %{
+     custome_format = %{
           "2": %{
             content_type: "n",
             label: "Primary account number (PAN)",
@@ -69,13 +68,9 @@ defmodule ISO8583 do
           }
         }
 
-        {:ok, message} =
-          fixture_message(:"0100")
-          |> Map.put(:"2", "444466668888888888888888")
-          |> ISO8583.encode(formats: custome_format)
+      message = some_message |> Map.put(:"2", "444466668888888888888888")
 
-        refute message |> ISO8583.valid?()
-      end
+      ISO8583.encode(message, formats: custome_format)
     ```
   """
 
