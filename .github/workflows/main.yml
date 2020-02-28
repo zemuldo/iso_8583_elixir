@@ -16,5 +16,7 @@ jobs:
         with:
           otp-version: ${{matrix.otp}}
           elixir-version: ${{matrix.elixir}}
+      - run: mix format
       - run: mix deps.get
+      - run: mix credo
       - run: mix coveralls
