@@ -67,7 +67,8 @@ defmodule ISO8583 do
       }}
   """
 
-  @spec encode_127(message :: map(), opts :: Keyword.t()) :: {:ok, binary()} | {:error, String.t()}
+  @spec encode_127(message :: map(), opts :: Keyword.t()) ::
+          {:ok, binary()} | {:error, String.t()}
   def encode_127(message, opts \\ []) do
     opts = opts |> default_opts()
 
@@ -155,7 +156,8 @@ defmodule ISO8583 do
       }}
   """
 
-  @spec encode_127_25(message :: map(), opts :: Keyword.t()) :: {:ok, binary()} | {:error, String.t()}
+  @spec encode_127_25(message :: map(), opts :: Keyword.t()) ::
+          {:ok, binary()} | {:error, String.t()}
   def encode_127_25(message, opts \\ []) do
     opts = opts |> default_opts()
 
@@ -208,7 +210,8 @@ defmodule ISO8583 do
        }}
   """
 
-  @spec decode_127(message :: binary(), opts :: Keyword.t()) :: {:ok, map()} | {:error, String.t()}
+  @spec decode_127(message :: binary(), opts :: Keyword.t()) ::
+          {:ok, map()} | {:error, String.t()}
   def decode_127(message, opts \\ [])
 
   def decode_127(message, opts) when is_binary(message) do
@@ -265,7 +268,8 @@ defmodule ISO8583 do
       }}
   """
 
-  @spec decode_127_25(message :: binary(), opts :: Keyword.t()) :: {:ok, map()} | {:error, String.t()}
+  @spec decode_127_25(message :: binary(), opts :: Keyword.t()) ::
+          {:ok, map()} | {:error, String.t()}
   def decode_127_25(message, opts \\ []) do
     opts = opts |> default_opts()
 
@@ -364,7 +368,8 @@ defmodule ISO8583 do
       "70": "001"
       }}
   """
-  @spec valid(message :: map() | binary(), opts :: Keyword.t()) :: {:ok, map()} | {:error, String.t()}
+  @spec valid(message :: map() | binary(), opts :: Keyword.t()) ::
+          {:ok, map()} | {:error, String.t()}
   def valid(message, opts \\ [])
 
   def valid(message, opts) when is_map(message) do
