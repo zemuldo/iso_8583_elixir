@@ -1,10 +1,7 @@
 defmodule ISO8583.Formats.Definitions do
   @moduledoc false
-  # TODO: Configure default formats and merge.
   defmacro __using__(_) do
     quote do
-      alias ISO8583.Utils
-      @custom_formats %{}
       @formats_definitions %{
                              "0": %{
                                content_type: "n",
@@ -1235,10 +1232,9 @@ defmodule ISO8583.Formats.Definitions do
                                max_len: 8
                              }
                            }
-                           |> Utils.atomify_map()
       @doc false
       def formats_definitions,
-        do: Map.merge(@formats_definitions, @custom_formats |> Utils.atomify_map())
+        do: @formats_definitions
     end
   end
 end
