@@ -16,9 +16,14 @@ jobs:
         with:
           otp-version: ${{matrix.otp}}
           elixir-version: ${{matrix.elixir}}
-      - run: mix format --check-formatted --dry-run
-      - run: mix deps.get
-      - run: mix deps.compile
-      - run: mix compile --warnings-as-errors
-      - run: mix credo --strict
-      - run: mix coveralls
+      - name: Test
+        env:
+          MIX_ENV: test
+        run: | 
+          export MIX_ENV=test
+          mix format --check-formatted --dry-run
+          mix deps.get
+          mix deps.compile
+          mix compile --warnings-as-errors
+          mix credo --strict
+          mix coveralls
