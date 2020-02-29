@@ -88,9 +88,17 @@ defmodule ISO8583.Decode do
 
     case current do
       1 ->
-        {field_data, left} = extract_field_data(field, data, opts[:formats][field])
-        extracted = extracted |> Map.put(field, field_data)
-        extract_children(rest, left, pad, extracted, counter + 1, opts)
+        format = opts[:formats][field]
+        {field_data, left} = extract_field_data(field, data, format)
+
+        case byte_size(field_data) > format.max_len do
+          false ->
+            extracted = extracted |> Map.put(field, field_data)
+            extract_children(rest, left, pad, extracted, counter + 1, opts)
+
+          true ->
+            {:error, "Error while decoding field #{field}, data exceeds configured length, expected maximum of #{format.max_len} but found #{byte_size(field_data)}"}
+        end
 
       0 ->
         extract_children(rest, data, pad, extracted, counter + 1, opts)

@@ -48,7 +48,10 @@ defmodule ISO8583.MixProject do
   end
 
   defp description() do
-    "An Elixir library for ISO 8583 massing validation, decoding and encoding"
+    """
+    An Elixir library for ISO 8583, Supports message validation, 
+    decoding and encoding with custom field data types and length
+    """
   end
 
   defp package() do
