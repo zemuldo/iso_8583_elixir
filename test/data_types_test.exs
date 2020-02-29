@@ -11,21 +11,23 @@ defmodule ISO8583.Test.DataTypesTest do
     use ISO8583.Test.Setup
 
     test "should test unknown type" do
-      assert DataTypes.valid?("2", "ABCD", Formats.format(:"2") |> Map.put(:content_type, "aa")) == {:error, "Data type aa is not implemented"}
+      assert DataTypes.valid?("2", "ABCD", Formats.format(:"2") |> Map.put(:content_type, "aa")) ==
+               {:error, "Data type aa is not implemented"}
     end
 
     test "should test valid a type" do
-      assert DataTypes.valid?("2", "ABCD", Formats.format(:"2") |> Map.put(:content_type, "a")) == true
+      assert DataTypes.valid?("2", "ABCD", Formats.format(:"2") |> Map.put(:content_type, "a")) ==
+               true
     end
 
     test "should test invalid valid a type" do
-      assert DataTypes.valid?("2", "ABCD5", Formats.format(:"2") |> Map.put(:content_type, "a")) == 
-      {:error,
-      "While processing field 2 data provided is not of type 'a'"}
+      assert DataTypes.valid?("2", "ABCD5", Formats.format(:"2") |> Map.put(:content_type, "a")) ==
+               {:error, "While processing field 2 data provided is not of type 'a'"}
     end
 
     test "should test valid z test" do
-      assert DataTypes.valid?("35", "4180875104555684D190522611950628", Formats.format(:"35")) == true
+      assert DataTypes.valid?("35", "4180875104555684D190522611950628", Formats.format(:"35")) ==
+               true
     end
 
     test "should test valid n type " do
@@ -52,7 +54,8 @@ defmodule ISO8583.Test.DataTypesTest do
     end
 
     test "should test valid p type # " do
-      assert DataTypes.valid?("127", "#", Formats.format(:"127") |> Map.put(:content_type, "p")) == true
+      assert DataTypes.valid?("127", "#", Formats.format(:"127") |> Map.put(:content_type, "p")) ==
+               true
     end
 
     test "should test valid p type * " do

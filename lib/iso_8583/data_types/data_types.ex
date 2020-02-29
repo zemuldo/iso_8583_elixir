@@ -18,8 +18,6 @@ defmodule ISO8583.DataTypes do
   - `z` - `Track 2` as defined in `ISO 7813`
   """
 
-  alias ISO8583.Formats
-
   defp test?("a", character) do
     Regex.match?(~r/[a-z]/i, character)
   end
@@ -126,7 +124,7 @@ defmodule ISO8583.DataTypes do
 
   """
 
-  def valid?(field,string_data, %{content_type: "x+n"} = format) do
+  def valid?(field, string_data, %{content_type: "x+n"} = format) do
     with true <- Regex.match?(~r/[c,d]/i, String.at(string_data, 0)),
          true <- run_validation(field, "x+n", string_data),
          true <- check_data_length(field, string_data, format) do
@@ -152,7 +150,6 @@ defmodule ISO8583.DataTypes do
   @doc false
   def valid?(message, opts) do
     for {key, value} <- message do
-
       case valid?(key, value, opts[:formats][key]) do
         true -> true
         error -> throw(error)

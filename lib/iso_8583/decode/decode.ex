@@ -1,7 +1,7 @@
 defmodule ISO8583.Decode do
   @moduledoc false
-  alias ISO8583.Utils
   alias ISO8583.DataTypes
+  alias ISO8583.Utils
 
   def decode_0_127(message, opts) do
     with {:ok, _, chunk1} <- extract_tcp_len_header(message, opts),
@@ -97,7 +97,7 @@ defmodule ISO8583.Decode do
           extracted = extracted |> Map.put(field, field_data)
           extract_children(rest, left, pad, extracted, counter + 1, opts)
         else
-          error -> 
+          error ->
             error
         end
 

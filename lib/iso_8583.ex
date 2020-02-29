@@ -398,7 +398,7 @@ defmodule ISO8583 do
 
     case decode(message, opts) do
       {:ok, _} -> true
-      {:error, _} -> false 
+      {:error, _} -> false
     end
   end
 
