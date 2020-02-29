@@ -1,6 +1,7 @@
 defmodule ISO8583.Decode do
   @moduledoc false
   alias ISO8583.Utils
+  alias ISO8583.DataTypes
 
   def decode_0_127(message, opts) do
     with {:ok, _, chunk1} <- extract_tcp_len_header(message, opts),
@@ -91,13 +92,13 @@ defmodule ISO8583.Decode do
         format = opts[:formats][field]
         {field_data, left} = extract_field_data(field, data, format)
 
-        case byte_size(field_data) > format.max_len do
-          false ->
-            extracted = extracted |> Map.put(field, field_data)
-            extract_children(rest, left, pad, extracted, counter + 1, opts)
-
-          true ->
-            {:error, "Error while decoding field #{field}, data exceeds configured length, expected maximum of #{format.max_len} but found #{byte_size(field_data)}"}
+        with true <- DataTypes.check_data_length(field, field_data, format),
+             true <- DataTypes.valid?(field, field_data, format) do
+          extracted = extracted |> Map.put(field, field_data)
+          extract_children(rest, left, pad, extracted, counter + 1, opts)
+        else
+          error -> 
+            error
         end
 
       0 ->

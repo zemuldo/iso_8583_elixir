@@ -190,7 +190,7 @@ defmodule ISO8583Test do
         |> ISO8583.encode(formats: custome_format)
 
       assert message |> ISO8583.valid() ==
-               {:error, "Error while decoding field 2, data exceeds configured length, expected maximum of 19 but found 24"}
+               {:error, "Invalid length of data on field 2, expected maximum of 19 , found 24"}
     end
   end
 end
