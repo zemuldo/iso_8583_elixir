@@ -27,3 +27,4 @@ jobs:
           mix compile --warnings-as-errors
           mix credo --strict
           mix coveralls
+
