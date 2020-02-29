@@ -1,5 +1,6 @@
 defmodule ISO8583.Decode do
   @moduledoc false
+  alias ISO8583.DataTypes
   alias ISO8583.Utils
 
   def decode_0_127(message, opts) do
@@ -88,9 +89,17 @@ defmodule ISO8583.Decode do
 
     case current do
       1 ->
-        {field_data, left} = extract_field_data(field, data, opts[:formats][field])
-        extracted = extracted |> Map.put(field, field_data)
-        extract_children(rest, left, pad, extracted, counter + 1, opts)
+        format = opts[:formats][field]
+        {field_data, left} = extract_field_data(field, data, format)
+
+        with true <- DataTypes.check_data_length(field, field_data, format),
+             true <- DataTypes.valid?(field, field_data, format) do
+          extracted = extracted |> Map.put(field, field_data)
+          extract_children(rest, left, pad, extracted, counter + 1, opts)
+        else
+          error ->
+            error
+        end
 
       0 ->
         extract_children(rest, data, pad, extracted, counter + 1, opts)

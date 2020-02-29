@@ -4,7 +4,7 @@ defmodule ISO8583.MixProject do
   def project do
     [
       app: :iso_8583,
-      version: "0.1.2",
+      version: "0.1.3",
       elixir: "~> 1.8",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
@@ -48,7 +48,10 @@ defmodule ISO8583.MixProject do
   end
 
   defp description() do
-    "An Elixir library for ISO 8583 massing validation, decoding and encoding"
+    """
+    An Elixir library for ISO 8583, Supports message validation, 
+    decoding and encoding with custom field data types and length
+    """
   end
 
   defp package() do

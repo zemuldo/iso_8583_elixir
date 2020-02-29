@@ -151,4 +151,17 @@ defmodule ISO8583.Utils do
     [type | _] = len_type |> String.split("var")
     byte_size(type)
   end
+
+  def check_data_length(field, data, max_len) do
+    case byte_size(data) <= max_len do
+      true ->
+        :ok
+
+      false ->
+        {:error,
+         "Error while decoding field #{field}, data exceeds configured length, expected maximum of #{
+           max_len
+         } but found #{byte_size(data)}"}
+    end
+  end
 end

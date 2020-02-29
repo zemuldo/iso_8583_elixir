@@ -396,11 +396,9 @@ defmodule ISO8583 do
   def valid?(message, opts) when is_binary(message) do
     opts = opts |> default_opts()
 
-    with {:ok, decoded} <- decode(message),
-         {:ok, _} <- DataTypes.valid?(decoded, opts) do
-      true
-    else
-      _ -> false
+    case decode(message, opts) do
+      {:ok, _} -> true
+      {:error, _} -> false
     end
   end
 
@@ -455,10 +453,7 @@ defmodule ISO8583 do
   def valid(message, opts) when is_binary(message) do
     opts = opts |> default_opts()
 
-    case decode(message) do
-      {:ok, decoded} -> decoded |> DataTypes.valid?(opts)
-      error -> error
-    end
+    message |> decode(opts)
   end
 
   defp default_opts([]) do

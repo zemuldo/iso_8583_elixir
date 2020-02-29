@@ -18,8 +18,6 @@ defmodule ISO8583.DataTypes do
   - `z` - `Track 2` as defined in `ISO 7813`
   """
 
-  alias ISO8583.Formats
-
   defp test?("a", character) do
     Regex.match?(~r/[a-z]/i, character)
   end
@@ -87,34 +85,7 @@ defmodule ISO8583.DataTypes do
     end
   end
 
-  defp check_data_length(field, data) when is_atom(field) do
-    field
-    |> Formats.format()
-    |> check_data_length(field, data)
-  end
-
-  defp check_data_length(field, data) when is_integer(field) do
-    field =
-      field
-      |> Integer.to_string()
-      |> String.to_atom()
-
-    field
-    |> Formats.format()
-    |> check_data_length(field, data)
-  end
-
-  defp check_data_length(field, data) do
-    field =
-      field
-      |> String.to_atom()
-
-    field
-    |> Formats.format()
-    |> check_data_length(field, data)
-  end
-
-  defp check_data_length(%{len_type: "fixed"} = format, field, data) do
+  def check_data_length(field, data, %{len_type: "fixed"} = format) do
     case byte_size(data) == format.max_len do
       true ->
         true
@@ -127,7 +98,7 @@ defmodule ISO8583.DataTypes do
     end
   end
 
-  defp check_data_length(%{len_type: _} = format, field, data) do
+  def check_data_length(field, data, %{len_type: _} = format) do
     case byte_size(data) <= format.max_len do
       true ->
         true
@@ -144,19 +115,19 @@ defmodule ISO8583.DataTypes do
   Function to validate the data type in a field, returns `true` if all characters in a field matches the type otherwize return false
   ## Examples
 
-      iex> DataTypes.valid?("2", "n", "440044444444444")
+      iex> DataTypes.valid?("2", "440044444444444", ISO8583.Formats.format(:"2"))
       true
-      iex> DataTypes.valid?("2", "n", "440044444444444R")
+      iex> DataTypes.valid?("2", "440044444444444R", ISO8583.Formats.format(:"2"))
       {:error, "While processing field 2 data provided is not of type 'n'"}
-      iex> DataTypes.valid?("2", "n", "44004444444444499999999")
+      iex> DataTypes.valid?("2", "44004444444444499999999", ISO8583.Formats.format(:"2"))
       {:error, "Invalid length of data on field 2, expected maximum of 19 , found 23"}
 
   """
 
-  def valid?(field, "x+n", string_data) do
+  def valid?(field, string_data, %{content_type: "x+n"} = format) do
     with true <- Regex.match?(~r/[c,d]/i, String.at(string_data, 0)),
          true <- run_validation(field, "x+n", string_data),
-         true <- check_data_length(field, string_data) do
+         true <- check_data_length(field, string_data, format) do
       true
     else
       error ->
@@ -167,9 +138,9 @@ defmodule ISO8583.DataTypes do
     end
   end
 
-  def valid?(field, type, string_data) do
-    with true <- run_validation(field, type, string_data),
-         true <- check_data_length(field, string_data) do
+  def valid?(field, string_data, format) do
+    with true <- run_validation(field, format.content_type, string_data),
+         true <- check_data_length(field, string_data, format) do
       true
     else
       error -> error
@@ -179,9 +150,7 @@ defmodule ISO8583.DataTypes do
   @doc false
   def valid?(message, opts) do
     for {key, value} <- message do
-      %{content_type: type} = opts[:formats][key]
-
-      case valid?(key, type, value) do
+      case valid?(key, value, opts[:formats][key]) do
         true -> true
         error -> throw(error)
       end
