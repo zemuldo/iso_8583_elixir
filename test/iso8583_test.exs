@@ -79,7 +79,7 @@ defmodule ISO8583Test do
     end
 
     test "fail to decode invalid MTI" do
-      {:error, message} = <<0, 49>> <> "3200" |> ISO8583.decode()
+      {:error, message} = (<<0, 49>> <> "3200") |> ISO8583.decode()
       assert message == "Unknow MTI 3200"
     end
 

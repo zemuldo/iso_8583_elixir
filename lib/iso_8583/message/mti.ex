@@ -90,10 +90,10 @@ defmodule ISO8583.Message.MTI do
        - "0820": "Network Management advice"
     
   ## 1993 Version MTIs
-    Similar to 1987 version MTIs but presceeded with 1
+    Similar to 1987 version MTIs but presceeded with 1 instead of 0
 
   ## 2003 Version MTIs
-    Similar to 1987 version MTIs but presceeded with 2
+    Similar to 1987 version MTIs but presceeded with 2 instead of 0
   """
   @private_common_types %{
     "9900": "Private use, reserved by ISO, request, Acquirer",
