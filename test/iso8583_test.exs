@@ -68,6 +68,21 @@ defmodule ISO8583Test do
 
   # Decoding message
   describe "Decoding message" do
+    test "fail to decode invalid message no length indicatpor" do
+      {:error, message} = "" |> ISO8583.decode()
+      assert message == "Error while extracting message length indicator, Not encoded"
+    end
+
+    test "fail to decode invalid message no MTI" do
+      {:error, message} = <<0, 49>> |> ISO8583.decode()
+      assert message == "Error while extracting MTI, Not encoded"
+    end
+
+    test "fail to decode invalid MTI" do
+      {:error, message} = (<<0, 49>> <> "3200") |> ISO8583.decode()
+      assert message == "Unknow MTI 3200"
+    end
+
     test "decode 0100 message" do
       message = fixture_message(:"0100")
       {:ok, encoded} = message |> ISO8583.encode()

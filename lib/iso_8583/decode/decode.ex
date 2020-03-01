@@ -2,6 +2,8 @@ defmodule ISO8583.Decode do
   @moduledoc false
   alias ISO8583.DataTypes
   alias ISO8583.Utils
+  import ISO8583.Guards
+  alias ISO8583.Message.MTI
 
   def decode_0_127(message, opts) do
     with {:ok, _, chunk1} <- extract_tcp_len_header(message, opts),
@@ -35,13 +37,22 @@ defmodule ISO8583.Decode do
     end
   end
 
-  defp extract_mti(message) do
+  defp extract_mti(message) when has_mti(message) do
     mti = message |> String.slice(0, 4)
-    message = message |> String.slice(4..-1)
-    {:ok, mti, message}
+
+    case MTI.is_valid?(mti) do
+      true ->
+        message = message |> String.slice(4..-1)
+        {:ok, mti, message}
+
+      false ->
+        {:error, "Unknow MTI #{mti}"}
+    end
   end
 
-  defp extract_tcp_len_header(message, opts) do
+  defp extract_mti(_), do: {:error, "Error while extracting MTI, Not encoded"}
+
+  defp extract_tcp_len_header(message, opts) when has_tcp_length_indicator(message) do
     case opts[:tcp_len_header] do
       true ->
         tcp_len_header =
@@ -54,6 +65,9 @@ defmodule ISO8583.Decode do
         {:ok, 0, message}
     end
   end
+
+  defp extract_tcp_len_header(_, _),
+    do: {:error, "Error while extracting message length indicator, Not encoded"}
 
   def expand_field(%{"127": data} = message, "127.", opts) do
     case expand_binary(data, "127.", opts) do
