@@ -33,7 +33,8 @@ defmodule ISO8583 do
     ISO8583.encode(some_message, tcp_len_header: false)
     ```
 
-    ### Bitmap encoding
+  ### Bitmap encoding
+
     Primary and SecondaryBitmap encoding bitmap for fields 0-127 is configurable like below.
 
     Examples:
@@ -43,10 +44,10 @@ defmodule ISO8583 do
     ```
 
     ```elixir
-    ISO8583.encode(some_message) # will default to :hex result in 16 byte length bitmap
+    ISO8583.encode(some_message) # will default to :hex result in 16 byte length bitmap encoded hexadecimal
     ```
 
-    ### Custom formats
+  ### Custom formats
 
     Custom formats for data type, data length and length type for all fields including special bitmaps like 
     for 127.1 and 127.25.1 are configurable through custom formats. The default formats will be replaced by the custom one.
@@ -68,9 +69,9 @@ defmodule ISO8583 do
           }
         }
 
-      message = some_message |> Map.put(:"2", "444466668888888888888888")
+     message = some_message |> Map.put(:"2", "444466668888888888888888")
 
-      ISO8583.encode(message, formats: custome_format)
+     ISO8583.encode(message, formats: custome_format)
     ```
   """
 
