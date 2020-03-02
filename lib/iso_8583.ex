@@ -51,7 +51,7 @@ defmodule ISO8583 do
     Custom formats for data type, data length and length type for all fields including special bitmaps like 
     for 127.1 and 127.25.1 are configurable through custom formats. The default formats will be replaced by the custom one.
 
-    To see the default formats [check here](https://github.com/zemuldo/iso_8583_elixir/blob/master/lib/iso_8583/formats/definitions.ex)
+    To see the default formats [check here](https://github.com/zemuldo/iso_8583_elixir/blob/master/lib/iso_8583/formats/formats.ex#L104)
 
     Example:
 
