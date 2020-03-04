@@ -6,9 +6,9 @@ defmodule ISO8583 do
     ```elixir
       message = %{ "0": "0800",  "11": "646465", "12": "160244", "13": "0818", "7": "0818160244","70": "001"}
       {:ok, encoded} = ISO8583.encode(message)
-      {:ok, <<0, 49, 48, 56, 48, 48, 130, 56, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 48, 49, 56, 49, 54, ...>>}
+      # {:ok, <<0, 49, 48, 56, 48, 48, 130, 56, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 48, 49, 56, 49, 54, ...>>}
       {:ok, decoded} = ISO8583.decode(encoded)
-      {:ok, %{ "0": "0800",  "11": "646465", "12": "160244", "13": "0818", "7": "0818160244","70": "001"}}
+      # {:ok, %{ "0": "0800",  "11": "646465", "12": "160244", "13": "0818", "7": "0818160244","70": "001"}}
     ```
 
   ## Installation
@@ -73,6 +73,11 @@ defmodule ISO8583 do
 
      ISO8583.encode(message, formats: custome_format)
     ```
+  ### Custom Static Metadata
+    There is an option to configure static metadata to an iso message. 
+    Static metadata are info in like text format encoded at special locations in the message usually at the beginning
+    of the message and agreed upon by the sender and receiver.
+    This library considers the static metadata just after the MTI.
   """
 
   import ISO8583.Encode
@@ -239,7 +244,7 @@ defmodule ISO8583 do
   end
 
   @doc """
-  Function to encode json or Elixir map into ISO 8583 encoded binary. Use this to encode all fields that are supported.
+  Function to decode an ISO8583 binary using custimizable rules as describe in customization section.
   See the formats module for details.
   ## Examples
       iex> message = <<0, 49, 48, 56, 48, 48, 130, 56, 0, 0, 0, 0,

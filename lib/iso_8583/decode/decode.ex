@@ -18,35 +18,27 @@ defmodule ISO8583.Decode do
 
   defp extract_bitmap(message, opts) do
     case opts[:bitmap_encoding] do
-      :hex ->
-        bitmap =
-          message
-          |> :binary.part(0, 16)
-          |> Utils.bytes_to_hex()
-          |> Utils.iterable_bitmap(128)
+      :hex -> extract_bitmap(message, opts, 16)
+      _ ->extract_bitmap(message, opts, 32)
+    end
+  end
 
-        {:ok, bitmap, message |> String.slice(16..-1)}
-
-      _ ->
-        bitmap =
-          message
-          |> String.slice(0..32)
-          |> Utils.iterable_bitmap(128)
-
-        {:ok, bitmap, message |> String.slice(32..-1)}
+  defp extract_bitmap(message, _, length) do
+    with {:ok, bitmap, without_bitmap} <- Utils.slice(message, 0, length),
+         bitmap <- Utils.bytes_to_hex(bitmap) |> Utils.iterable_bitmap(128) do
+      {:ok, bitmap, without_bitmap}
+    else
+      error -> error
     end
   end
 
   defp extract_mti(message) when has_mti(message) do
-    mti = message |> String.slice(0, 4)
 
-    case MTI.is_valid?(mti) do
-      true ->
-        message = message |> String.slice(4..-1)
-        {:ok, mti, message}
-
-      false ->
-        {:error, "Unknow MTI #{mti}"}
+    with {:ok, mti, without_mti} <- Utils.slice(message, 0, 4),
+         {:ok, _} <- MTI.is_valid(mti) do
+      {:ok, mti, without_mti}
+    else
+      error -> error
     end
   end
 

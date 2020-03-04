@@ -1,6 +1,20 @@
 defmodule ISO8583.Utils do
   @moduledoc false
 
+  def slice(payload, lower, upper) when byte_size(payload) > lower and upper < 0 do
+    <<lower_part::binary-size(lower), upper_part::binary>> = payload
+    {:ok, lower_part, upper_part}
+  end
+
+  def slice(payload, lower, upper) when byte_size(payload) >= upper do
+    lower_part =
+      payload
+      |> binary_part(lower, upper)
+
+    <<_::binary-size(upper), upper_part::binary>> = payload
+    {:ok, lower_part, upper_part}
+  end
+
   def encode_bitmap(bitmap, encoding) do
     case encoding do
       :hex -> bitmap |> hex_to_bytes()
