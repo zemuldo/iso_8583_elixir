@@ -129,8 +129,8 @@ defmodule ISO8583.Utils do
   end
 
   def extract_tcp_header(hex) do
-    part_1 = hex |> String.slice(0..1) |> String.to_integer(16)
-    part_2 = hex |> String.slice(2..4) |> String.to_integer(16)
+    part_1 = hex |> binary_part(0, 1) |> String.to_integer(16)
+    part_2 = hex |> binary_part(1, 2) |> String.to_integer(16)
 
     256 * part_1 + part_2
   end
