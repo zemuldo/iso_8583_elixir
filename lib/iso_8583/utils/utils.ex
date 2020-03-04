@@ -136,15 +136,17 @@ defmodule ISO8583.Utils do
   end
 
   def extract_hex_data(message, length, "b") do
-    extracted = message |> binary_part(0, div(length, 2)) |> bytes_to_hex()
-    rem = message |> String.slice(div(length, 2)..-1)
-    {extracted, rem}
+    case slice(message, 0, div(length, 2)) do
+      {:ok, part, rem} -> {part |> bytes_to_hex(), rem}
+      {:error, reason} -> {:error, reason}
+      end
   end
 
   def extract_hex_data(message, length, _) do
-    extracted = message |> String.slice(0, length)
-    rem = message |> String.slice(length..-1)
-    {extracted, rem}
+    case slice(message, 0, length) do
+    {:ok, part, rem} -> {part, rem}
+    {:error, reason} -> {:error, reason}
+    end
   end
 
   def pad_string(string, pad, max) do
