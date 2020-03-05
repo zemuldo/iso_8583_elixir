@@ -1,5 +1,6 @@
 defmodule ISO8583.Message.ResponseStatus do
   @moduledoc false
+
   @message_status %{
     "00": "Approved or completed successfully",
     "01": "Refer to card issuer",
@@ -112,4 +113,18 @@ defmodule ISO8583.Message.ResponseStatus do
     D1: "MAC Error",
     E1: "Prepay error"
   }
+
+  defp invalid(status_code) do
+    case @message_status[status_code |> String.to_atom()] do
+      nil -> {:error, "Unknown statuscode"}
+      m -> {:error, m}
+    end
+  end
+
+  def ok?(%{"39": "00"}), do: {:ok, @message_status[:"00"]}
+  def ok?(%{"39" => "00"}), do: {:ok, @message_status[:"00"]}
+
+  def ok?(%{"39": status_code}), do: invalid(status_code)
+
+  def ok?(%{"39" => status_code}), do: invalid(status_code)
 end

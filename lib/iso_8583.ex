@@ -84,6 +84,7 @@ defmodule ISO8583 do
   alias ISO8583.DataTypes
   import ISO8583.Decode
   alias ISO8583.Formats
+  alias ISO8583.Message.ResponseStatus
   alias ISO8583.Utils
 
   @doc """
@@ -487,4 +488,23 @@ defmodule ISO8583 do
         |> Keyword.merge(formats: formats_with_customs)
     end
   end
+
+  @doc """
+  Fucntion to get the message status.
+  ## Examples
+
+      iex> ISO8583.status(%{"0": "0110", "39": "00"})
+      {:ok, "Approved or completed successfully"}
+      iex> ISO8583.status(%{"0": "0110", "39": "01"})
+      {:error, "Refer to card issuer"}
+      iex> ISO8583.status(%{"0": "0110", "39": "000"})
+      {:error, "Unknown statuscode"}
+  """
+  @spec status(message: map()) :: {:ok, String.t()} | {:error, String.t()}
+  def status(message) when is_map(message) do
+    message
+    |> ResponseStatus.ok?()
+  end
+
+  def status(_), do: {:error, "Message has to be a map with field 39"}
 end
