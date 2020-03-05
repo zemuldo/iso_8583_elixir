@@ -4,10 +4,12 @@ defmodule ISO8583.Decode do
   alias ISO8583.Utils
   import ISO8583.Guards
   alias ISO8583.Message.MTI
+  alias ISO8583.Message.StaticMeta
 
   def decode_0_127(message, opts) do
     with {:ok, _, chunk1} <- extract_tcp_len_header(message, opts),
-         {:ok, mti, chunk2} <- extract_mti(chunk1),
+         {:ok, _, without_static_meta} <- StaticMeta.extract(chunk1, opts[:static_meta]),
+         {:ok, mti, chunk2} <- extract_mti(without_static_meta),
          {:ok, bitmap, chunk3} <- extract_bitmap(chunk2, opts),
          {:ok, decoded} <- extract_children(bitmap, chunk3, "", %{}, 0, opts) do
       {:ok, decoded |> Map.merge(%{"0": mti})}

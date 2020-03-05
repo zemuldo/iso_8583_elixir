@@ -4,6 +4,7 @@ defmodule ISO8583.Encode do
   alias ISO8583.Bitmap
   alias ISO8583.Decode
   alias ISO8583.Utils
+  alias ISO8583.Message.StaticMeta
 
   def encode_0_127(message, opts) do
     with m <- extend_encode_etxtensions(message, opts),
@@ -12,7 +13,8 @@ defmodule ISO8583.Encode do
          {:ok, with_bitmap} <- encode_bitmap(bitmap_hex, with_mti, opts),
          bitmap_list <- Utils.iterable_bitmap(bitmap_hex, 128),
          {:ok, with_data} <- loop_bitmap(bitmap_list, m, with_bitmap, <<>>, 0, opts),
-         with_tcpe_header <- encode_tcp_header(with_data, opts) do
+         {:ok, with_static_meta} <- StaticMeta.put(with_data, opts[:static_meta]),
+         with_tcpe_header <- encode_tcp_header(with_static_meta, opts) do
       {:ok, with_tcpe_header}
     else
       error -> error
