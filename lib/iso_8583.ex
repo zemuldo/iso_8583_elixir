@@ -77,7 +77,14 @@ defmodule ISO8583 do
     There is an option to configure static metadata to an iso message. 
     Static metadata are info in like text format encoded at special locations in the message usually at the beginning
     of the message and agreed upon by the sender and receiver.
-    This library considers the static metadata just after the MTI.
+    This library considers the static metadata just after the MTI. 
+    In the example below BITCOIN-INTERCHANGE is encoded while encoding and extracted when decoding
+    the message.
+
+    ```elixir
+     {:ok, encoded} = message |> ISO8583.encode(static_meta: "BITCOIN-INTERCHANGE")
+     {:ok, decoded} = encoded |> ISO8583.decode(static_meta: "BITCOIN-INTERCHANGE")
+    ```
   """
 
   import ISO8583.Encode
