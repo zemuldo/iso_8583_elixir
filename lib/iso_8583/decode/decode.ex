@@ -4,10 +4,12 @@ defmodule ISO8583.Decode do
   alias ISO8583.Utils
   import ISO8583.Guards
   alias ISO8583.Message.MTI
+  alias ISO8583.Message.StaticMeta
 
   def decode_0_127(message, opts) do
     with {:ok, _, chunk1} <- extract_tcp_len_header(message, opts),
-         {:ok, mti, chunk2} <- extract_mti(chunk1),
+         {:ok, _, without_static_meta} <- StaticMeta.extract(chunk1, opts[:static_meta]),
+         {:ok, mti, chunk2} <- extract_mti(without_static_meta),
          {:ok, bitmap, chunk3} <- extract_bitmap(chunk2, opts),
          {:ok, decoded} <- extract_children(bitmap, chunk3, "", %{}, 0, opts) do
       {:ok, decoded |> Map.merge(%{"0": mti})}
@@ -18,35 +20,26 @@ defmodule ISO8583.Decode do
 
   defp extract_bitmap(message, opts) do
     case opts[:bitmap_encoding] do
-      :hex ->
-        bitmap =
-          message
-          |> :binary.part(0, 16)
-          |> Utils.bytes_to_hex()
-          |> Utils.iterable_bitmap(128)
+      :hex -> extract_bitmap(message, opts, 16)
+      _ -> extract_bitmap(message, opts, 32)
+    end
+  end
 
-        {:ok, bitmap, message |> String.slice(16..-1)}
-
-      _ ->
-        bitmap =
-          message
-          |> String.slice(0..32)
-          |> Utils.iterable_bitmap(128)
-
-        {:ok, bitmap, message |> String.slice(32..-1)}
+  defp extract_bitmap(message, _, length) do
+    with {:ok, bitmap, without_bitmap} <- Utils.slice(message, 0, length),
+         bitmap <- Utils.bytes_to_hex(bitmap) |> Utils.iterable_bitmap(128) do
+      {:ok, bitmap, without_bitmap}
+    else
+      error -> error
     end
   end
 
   defp extract_mti(message) when has_mti(message) do
-    mti = message |> String.slice(0, 4)
-
-    case MTI.is_valid?(mti) do
-      true ->
-        message = message |> String.slice(4..-1)
-        {:ok, mti, message}
-
-      false ->
-        {:error, "Unknow MTI #{mti}"}
+    with {:ok, mti, without_mti} <- Utils.slice(message, 0, 4),
+         {:ok, _} <- MTI.is_valid(mti) do
+      {:ok, mti, without_mti}
+    else
+      error -> error
     end
   end
 
@@ -55,11 +48,9 @@ defmodule ISO8583.Decode do
   defp extract_tcp_len_header(message, opts) when has_tcp_length_indicator(message) do
     case opts[:tcp_len_header] do
       true ->
-        tcp_len_header =
-          message |> binary_part(0, 2) |> Utils.bytes_to_hex() |> Utils.extract_tcp_header()
-
-        message = message |> String.slice(2..-1)
-        {:ok, tcp_len_header, message}
+        {:ok, tcp_len_header_bin, rest} = Utils.slice(message, 0, 2)
+        tcp_len_header = tcp_len_header_bin |> Utils.bytes_to_hex() |> Utils.extract_tcp_header()
+        {:ok, tcp_len_header, rest}
 
       false ->
         {:ok, 0, message}
@@ -86,9 +77,10 @@ defmodule ISO8583.Decode do
   def expand_field(message, _, _), do: {:ok, message}
 
   def expand_binary(data, field_pad, opts) do
-    with bitmap <- Utils.iterable_bitmap(String.slice(data, 0, 16), 64),
+    with {:ok, bitmap_binary, without_bitmap} <- Utils.slice(data, 0, 16),
+         bitmap <- Utils.iterable_bitmap(bitmap_binary, 64),
          {:ok, expanded} <-
-           extract_children(bitmap, data |> String.slice(16..-1), field_pad, %{}, 0, opts) do
+           extract_children(bitmap, without_bitmap, field_pad, %{}, 0, opts) do
       {:ok, expanded}
     else
       error -> error
@@ -135,14 +127,17 @@ defmodule ISO8583.Decode do
 
   defp extract_field_data(_, data, %{len_type: _} = format) do
     len_indicator_length = Utils.var_len_chars(format)
-    length = String.slice(data, 0, len_indicator_length)
-    field_data_len = String.to_integer(length)
-    data = String.slice(data, len_indicator_length..-1)
 
-    Utils.extract_hex_data(
-      data,
-      field_data_len,
-      format.content_type
-    )
+    with {:ok, field_data_len, without_length} <- Utils.slice(data, 0, len_indicator_length),
+         {extracted, remaining} <-
+           Utils.extract_hex_data(
+             without_length,
+             String.to_integer(field_data_len),
+             format.content_type
+           ) do
+      {extracted, remaining}
+    else
+      error -> error
+    end
   end
 end

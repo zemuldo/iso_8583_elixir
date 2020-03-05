@@ -1,6 +1,20 @@
 defmodule ISO8583.Utils do
   @moduledoc false
 
+  def slice(payload, lower, upper) when byte_size(payload) > lower and upper < 0 do
+    <<lower_part::binary-size(lower), upper_part::binary>> = payload
+    {:ok, lower_part, upper_part}
+  end
+
+  def slice(payload, lower, upper) when byte_size(payload) >= upper do
+    lower_part =
+      payload
+      |> binary_part(lower, upper)
+
+    <<_::binary-size(upper), upper_part::binary>> = payload
+    {:ok, lower_part, upper_part}
+  end
+
   def encode_bitmap(bitmap, encoding) do
     case encoding do
       :hex -> bitmap |> hex_to_bytes()
@@ -115,22 +129,24 @@ defmodule ISO8583.Utils do
   end
 
   def extract_tcp_header(hex) do
-    part_1 = hex |> String.slice(0..1) |> String.to_integer(16)
-    part_2 = hex |> String.slice(2..4) |> String.to_integer(16)
+    part_1 = hex |> binary_part(0, 1) |> String.to_integer(16)
+    part_2 = hex |> binary_part(1, 2) |> String.to_integer(16)
 
     256 * part_1 + part_2
   end
 
   def extract_hex_data(message, length, "b") do
-    extracted = message |> binary_part(0, div(length, 2)) |> bytes_to_hex()
-    rem = message |> String.slice(div(length, 2)..-1)
-    {extracted, rem}
+    case slice(message, 0, div(length, 2)) do
+      {:ok, part, rem} -> {part |> bytes_to_hex(), rem}
+      {:error, reason} -> {:error, reason}
+    end
   end
 
   def extract_hex_data(message, length, _) do
-    extracted = message |> String.slice(0, length)
-    rem = message |> String.slice(length..-1)
-    {extracted, rem}
+    case slice(message, 0, length) do
+      {:ok, part, rem} -> {part, rem}
+      {:error, reason} -> {:error, reason}
+    end
   end
 
   def pad_string(string, pad, max) do

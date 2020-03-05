@@ -313,6 +313,22 @@ defmodule ISO8583.Message.MTI do
   def is_valid?(_), do: false
 
   @doc """
+  Function check validity of MTI return error.
+  ## Examples
+      iex> ISO8583.Message.MTI.is_valid(:"0100")
+      {:ok, "Authorization request"}
+      iex>ISO8583.Message.MTI.is_valid(:"3100")
+      {:error, "Unknow MTI 3100"}
+  """
+  @spec is_valid(mti :: String.t() | atom()) :: :ok | {:error, String.t()}
+  def is_valid(mti) do
+    case is_valid?(mti) do
+      true -> {:ok, get(mti)}
+      false -> {:error, "Unknow MTI #{mti}"}
+    end
+  end
+
+  @doc """
   Function get description of MTI.
   ## Examples
       iex> ISO8583.Message.MTI.get(:"0100")

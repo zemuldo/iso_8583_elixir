@@ -6,9 +6,9 @@ defmodule ISO8583 do
     ```elixir
       message = %{ "0": "0800",  "11": "646465", "12": "160244", "13": "0818", "7": "0818160244","70": "001"}
       {:ok, encoded} = ISO8583.encode(message)
-      {:ok, <<0, 49, 48, 56, 48, 48, 130, 56, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 48, 49, 56, 49, 54, ...>>}
+      # {:ok, <<0, 49, 48, 56, 48, 48, 130, 56, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 48, 49, 56, 49, 54, ...>>}
       {:ok, decoded} = ISO8583.decode(encoded)
-      {:ok, %{ "0": "0800",  "11": "646465", "12": "160244", "13": "0818", "7": "0818160244","70": "001"}}
+      # {:ok, %{ "0": "0800",  "11": "646465", "12": "160244", "13": "0818", "7": "0818160244","70": "001"}}
     ```
 
   ## Installation
@@ -33,7 +33,8 @@ defmodule ISO8583 do
     ISO8583.encode(some_message, tcp_len_header: false)
     ```
 
-    ### Bitmap encoding
+  ### Bitmap encoding
+
     Primary and SecondaryBitmap encoding bitmap for fields 0-127 is configurable like below.
 
     Examples:
@@ -43,15 +44,15 @@ defmodule ISO8583 do
     ```
 
     ```elixir
-    ISO8583.encode(some_message) # will default to :hex result in 16 byte length bitmap
+    ISO8583.encode(some_message) # will default to :hex result in 16 byte length bitmap encoded hexadecimal
     ```
 
-    ### Custom formats
+  ### Custom formats
 
     Custom formats for data type, data length and length type for all fields including special bitmaps like 
     for 127.1 and 127.25.1 are configurable through custom formats. The default formats will be replaced by the custom one.
 
-    To see the default formats [check here](https://github.com/zemuldo/iso_8583_elixir/blob/master/lib/iso_8583/formats/definitions.ex)
+    To see the default formats [check here](https://github.com/zemuldo/iso_8583_elixir/blob/master/lib/iso_8583/formats/formats.ex#L104)
 
     Example:
 
@@ -68,9 +69,21 @@ defmodule ISO8583 do
           }
         }
 
-      message = some_message |> Map.put(:"2", "444466668888888888888888")
+     message = some_message |> Map.put(:"2", "444466668888888888888888")
 
-      ISO8583.encode(message, formats: custome_format)
+     ISO8583.encode(message, formats: custome_format)
+    ```
+  ### Custom Static Metadata
+    There is an option to configure static metadata to an iso message. 
+    Static metadata are info in like text format encoded at special locations in the message usually at the beginning
+    of the message and agreed upon by the sender and receiver.
+    This library considers the static metadata just after the MTI. 
+    In the example below BITCOIN-INTERCHANGE is encoded while encoding and extracted when decoding
+    the message.
+
+    ```elixir
+     {:ok, encoded} = message |> ISO8583.encode(static_meta: "BITCOIN-INTERCHANGE")
+     {:ok, decoded} = encoded |> ISO8583.decode(static_meta: "BITCOIN-INTERCHANGE")
     ```
   """
 
@@ -78,6 +91,7 @@ defmodule ISO8583 do
   alias ISO8583.DataTypes
   import ISO8583.Decode
   alias ISO8583.Formats
+  alias ISO8583.Message.ResponseStatus
   alias ISO8583.Utils
 
   @doc """
@@ -238,7 +252,7 @@ defmodule ISO8583 do
   end
 
   @doc """
-  Function to encode json or Elixir map into ISO 8583 encoded binary. Use this to encode all fields that are supported.
+  Function to decode an ISO8583 binary using custimizable rules as describe in customization section.
   See the formats module for details.
   ## Examples
       iex> message = <<0, 49, 48, 56, 48, 48, 130, 56, 0, 0, 0, 0,
@@ -481,4 +495,23 @@ defmodule ISO8583 do
         |> Keyword.merge(formats: formats_with_customs)
     end
   end
+
+  @doc """
+  Fucntion to get the message status.
+  ## Examples
+
+      iex> ISO8583.status(%{"0": "0110", "39": "00"})
+      {:ok, "Approved or completed successfully"}
+      iex> ISO8583.status(%{"0": "0110", "39": "01"})
+      {:error, "Refer to card issuer"}
+      iex> ISO8583.status(%{"0": "0110", "39": "000"})
+      {:error, "Unknown statuscode"}
+  """
+  @spec status(message: map()) :: {:ok, String.t()} | {:error, String.t()}
+  def status(message) when is_map(message) do
+    message
+    |> ResponseStatus.ok?()
+  end
+
+  def status(_), do: {:error, "Message has to be a map with field 39"}
 end
