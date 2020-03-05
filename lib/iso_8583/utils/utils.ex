@@ -139,13 +139,13 @@ defmodule ISO8583.Utils do
     case slice(message, 0, div(length, 2)) do
       {:ok, part, rem} -> {part |> bytes_to_hex(), rem}
       {:error, reason} -> {:error, reason}
-      end
+    end
   end
 
   def extract_hex_data(message, length, _) do
     case slice(message, 0, length) do
-    {:ok, part, rem} -> {part, rem}
-    {:error, reason} -> {:error, reason}
+      {:ok, part, rem} -> {part, rem}
+      {:error, reason} -> {:error, reason}
     end
   end
 

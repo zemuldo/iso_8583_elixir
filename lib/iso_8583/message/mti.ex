@@ -322,10 +322,10 @@ defmodule ISO8583.Message.MTI do
   """
   @spec is_valid(mti :: String.t() | atom()) :: :ok | {:error, String.t()}
   def is_valid(mti) do
-   case is_valid?(mti) do
-    true -> {:ok, get(mti)}
-     false -> {:error, "Unknow MTI #{mti}"}
-   end
+    case is_valid?(mti) do
+      true -> {:ok, get(mti)}
+      false -> {:error, "Unknow MTI #{mti}"}
+    end
   end
 
   @doc """

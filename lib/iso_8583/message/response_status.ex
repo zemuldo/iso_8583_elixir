@@ -112,6 +112,4 @@ defmodule ISO8583.Message.ResponseStatus do
     D1: "MAC Error",
     E1: "Prepay error"
   }
-
-  
 end
