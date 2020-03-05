@@ -3,8 +3,8 @@ defmodule ISO8583.Encode do
 
   alias ISO8583.Bitmap
   alias ISO8583.Decode
-  alias ISO8583.Utils
   alias ISO8583.Message.StaticMeta
+  alias ISO8583.Utils
 
   def encode_0_127(message, opts) do
     with m <- extend_encode_etxtensions(message, opts),
