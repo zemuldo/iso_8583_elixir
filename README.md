@@ -2,6 +2,11 @@
 
 An ISO 8583 messaging library for Elixir. Supports message validation, encoding and decoding. [See the docs](https://hexdocs.pm/iso_8583)
 
+This project is still in early stages. If you have feature suggestions you can do two things.
+
+- Push a PR and I will be happy to review.
+- Suggest using new issue and I will be happy to implement.
+
 ```elixir
 iex> message
 %{
@@ -96,3 +101,10 @@ end
       refute message |> ISO8583.valid?()
     end
   ```
+  
+  ## Roadmap
+  - Optimizations
+  - More customizations
+  - Message composition
+  - Support for compsable validators.
+  - More tests.
